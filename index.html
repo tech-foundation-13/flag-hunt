@@ -1,143 +1,1641 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flag Hunt Prototype</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Flag Hunt</title>
 <style>
-body{margin:0;background:#111;color:white;font-family:Arial,sans-serif;text-align:center}
-.container{padding:20px}
-#arrow{font-size:100px;margin:10px 0;transition:transform .3s linear}
-#radar{width:300px;height:300px;margin:20px auto;border:3px solid #00ff88;border-radius:50%;position:relative;background:#181818}
-.ring{position:absolute;border:1px solid rgba(0,255,136,.3);border-radius:50%}
-.r1{width:100px;height:100px;left:98px;top:98px}
-.r2{width:200px;height:200px;left:48px;top:48px}
-.crossH{position:absolute;width:100%;height:1px;background:rgba(0,255,136,.3);top:50%}
-.crossV{position:absolute;height:100%;width:1px;background:rgba(0,255,136,.3);left:50%}
-#player{width:14px;height:14px;background:#00ff88;border-radius:50%;position:absolute;left:143px;top:143px}
-#flag{width:16px;height:16px;background:red;border-radius:50%;position:absolute}
-.label{position:absolute;color:#00ff88;font-weight:bold}
-.n{top:5px;left:145px}.s{bottom:5px;left:145px}.e{right:8px;top:145px}.w{left:8px;top:145px}
-#distance{font-size:40px;color:#00ff88}
-#status{font-size:24px;margin-top:15px}
-#accuracy{margin-top:10px;color:#ccc}
+:root {
+  color-scheme: dark;
+  --panel: rgba(17, 22, 24, 0.9);
+  --panel-strong: #111618;
+  --ink: #f5f8ef;
+  --muted: #aeb8aa;
+  --line: rgba(255, 255, 255, 0.12);
+  --grass: #77a66c;
+  --grass-dark: #517c53;
+  --road: #d7caaa;
+  --road-edge: #a99472;
+  --water: #5aa8c8;
+  --flag: #f04d37;
+  --flag-live: #ffd34d;
+  --boy-shirt: #2685e8;
+  --boy-skin: #d79868;
+  --capture: #59d989;
+  --danger: #ff6b55;
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background:
+    linear-gradient(145deg, rgba(43, 55, 35, 0.25), transparent 35%),
+    linear-gradient(180deg, #121716 0%, #171b15 48%, #101212 100%);
+  color: var(--ink);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+}
+
+button {
+  border: 0;
+  color: inherit;
+  font: inherit;
+}
+
+.game-shell {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto minmax(360px, 1fr) auto;
+  gap: 12px;
+  padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+}
+
+.top-hud,
+.bottom-hud {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.top-hud {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  min-height: 74px;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
+}
+
+.brand-mark {
+  position: relative;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #26312d 0%, #485f45 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.brand-mark::before {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 8px;
+  width: 3px;
+  height: 27px;
+  border-radius: 2px;
+  background: #f7efe1;
+}
+
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  top: 9px;
+  width: 17px;
+  height: 12px;
+  border-radius: 2px 6px 6px 2px;
+  background: var(--flag);
+  box-shadow: 0 12px 0 -5px var(--flag-live);
+}
+
+.title-stack {
+  min-width: 0;
+}
+
+.kicker {
+  margin: 0;
+  color: var(--flag-live);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 2px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #fff9e6;
+  font-size: clamp(24px, 5vw, 38px);
+  line-height: 0.95;
+  white-space: nowrap;
+}
+
+.hud-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(82px, 1fr));
+  gap: 8px;
+  min-width: min(560px, 48vw);
+}
+
+.stat {
+  min-height: 48px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.stat span {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.stat strong {
+  display: block;
+  margin-top: 3px;
+  overflow: hidden;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(1100px, 100%);
+  min-height: 0;
+  margin: 0 auto;
+}
+
+.map-frame {
+  position: relative;
+  width: min(100%, 900px);
+  aspect-ratio: 1 / 1;
+  max-height: calc(100dvh - 236px);
+  min-height: 350px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: #6a9a61;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.25),
+    0 28px 72px rgba(0, 0, 0, 0.42);
+}
+
+.game-map {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 16%, rgba(255, 229, 128, 0.3) 0 7%, transparent 8%),
+    radial-gradient(circle at 78% 78%, rgba(90, 168, 200, 0.58) 0 11%, transparent 12%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 25%, transparent 25% 50%, rgba(255, 255, 255, 0.08) 50% 75%, transparent 75%) 0 0 / 58px 58px,
+    linear-gradient(180deg, var(--grass) 0%, #6d9d64 100%);
+}
+
+.game-map::before,
+.game-map::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 50%;
+  width: 140%;
+  height: 34px;
+  border: 2px solid rgba(82, 65, 41, 0.2);
+  background: linear-gradient(180deg, #e8dbbb 0%, var(--road) 100%);
+  box-shadow:
+    0 0 0 1px rgba(68, 54, 31, 0.24),
+    0 7px 0 rgba(0, 0, 0, 0.06);
+  transform-origin: center;
+}
+
+.game-map::before {
+  transform: translate(-50%, -50%) rotate(18deg);
+}
+
+.game-map::after {
+  transform: translate(-50%, -50%) rotate(-55deg);
+}
+
+.road {
+  position: absolute;
+  z-index: 2;
+  width: 120%;
+  height: 24px;
+  border-top: 2px dashed rgba(97, 80, 53, 0.36);
+  border-bottom: 2px dashed rgba(97, 80, 53, 0.36);
+  background: rgba(230, 218, 188, 0.92);
+  transform-origin: center;
+}
+
+.road.one {
+  left: -8%;
+  top: 19%;
+  transform: rotate(-7deg);
+}
+
+.road.two {
+  left: -12%;
+  top: 72%;
+  transform: rotate(10deg);
+}
+
+.road.three {
+  left: -10%;
+  top: 44%;
+  transform: rotate(86deg);
+}
+
+.map-zone {
+  position: absolute;
+  z-index: 3;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.map-zone.grove {
+  left: 7%;
+  top: 55%;
+  width: 25%;
+  height: 24%;
+  border-radius: 48% 42% 38% 46%;
+  background:
+    radial-gradient(circle at 34% 32%, #315d35 0 14%, transparent 15%),
+    radial-gradient(circle at 62% 54%, #315d35 0 17%, transparent 18%),
+    radial-gradient(circle at 46% 70%, #315d35 0 12%, transparent 13%),
+    #4f874e;
+}
+
+.map-zone.court {
+  right: 9%;
+  top: 11%;
+  width: 22%;
+  height: 18%;
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, transparent 48%, rgba(255, 255, 255, 0.5) 49% 51%, transparent 52%),
+    linear-gradient(0deg, transparent 48%, rgba(255, 255, 255, 0.42) 49% 51%, transparent 52%),
+    #ba6e4f;
+}
+
+.map-zone.pond {
+  right: 8%;
+  bottom: 8%;
+  width: 23%;
+  height: 19%;
+  border-radius: 48% 55% 45% 42%;
+  background:
+    radial-gradient(circle at 55% 40%, rgba(255, 255, 255, 0.35), transparent 18%),
+    linear-gradient(135deg, #69c3da 0%, var(--water) 100%);
+}
+
+.map-zone.plaza {
+  left: 36%;
+  top: 34%;
+  width: 25%;
+  height: 17%;
+  border-radius: 8px;
+  background:
+    linear-gradient(45deg, rgba(130, 108, 72, 0.28) 25%, transparent 25% 50%, rgba(130, 108, 72, 0.28) 50% 75%, transparent 75%) 0 0 / 28px 28px,
+    #d4bd8f;
+}
+
+.map-label {
+  position: absolute;
+  z-index: 4;
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: rgba(17, 22, 24, 0.64);
+  color: #f7f1db;
+  font-size: clamp(10px, 1.7vw, 12px);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.map-label.gate {
+  left: 12%;
+  top: 13%;
+}
+
+.map-label.lawn {
+  left: 44%;
+  top: 58%;
+}
+
+.map-label.pond-label {
+  right: 12%;
+  bottom: 16%;
+}
+
+.map-label.court-label {
+  right: 13%;
+  top: 17%;
+}
+
+.practice-mode .map-label.court-label {
+  display: none;
+}
+
+.hunt-ring,
+.hunt-ring::before,
+.hunt-ring::after {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.hunt-ring {
+  z-index: 5;
+  left: 50%;
+  top: 50%;
+  width: 83.333%;
+  height: 83.333%;
+  border: 2px solid rgba(255, 255, 255, 0.58);
+  background: rgba(255, 255, 255, 0.03);
+  transform: translate(-50%, -50%);
+}
+
+.hunt-ring::before {
+  content: "";
+  inset: 24%;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.hunt-ring::after {
+  content: "50 m";
+  right: 6%;
+  top: 50%;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: rgba(17, 22, 24, 0.7);
+  color: #fff9dc;
+  font-size: 12px;
+  font-weight: 900;
+  transform: translateY(-50%);
+}
+
+.trail-layer,
+.flags-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+}
+
+.trail-dot {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(23, 74, 110, 0.42);
+  transform: translate(-50%, -50%);
+}
+
+.flag-marker {
+  position: absolute;
+  width: 38px;
+  height: 44px;
+  transform: translate(-50%, -100%);
+  transition: left 240ms ease, top 240ms ease, opacity 180ms ease, filter 180ms ease;
+}
+
+.flag-marker .pole {
+  position: absolute;
+  left: 17px;
+  top: 8px;
+  width: 4px;
+  height: 31px;
+  border-radius: 3px;
+  background: #fff7df;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.flag-marker .cloth {
+  position: absolute;
+  left: 20px;
+  top: 8px;
+  width: 19px;
+  height: 14px;
+  border-radius: 2px 7px 7px 2px;
+  background: var(--flag);
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.12);
+}
+
+.flag-marker .base {
+  position: absolute;
+  left: 10px;
+  bottom: 2px;
+  width: 18px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.26);
+}
+
+.flag-marker .number {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: #161b18;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.84);
+}
+
+.flag-marker.active {
+  z-index: 9;
+  filter: drop-shadow(0 0 12px rgba(255, 211, 77, 0.9));
+  animation: flagBob 1.4s ease-in-out infinite;
+}
+
+.flag-marker.active .cloth,
+.flag-marker.active .number {
+  background: var(--flag-live);
+  color: #1a1711;
+}
+
+.flag-marker.locked {
+  opacity: 0.5;
+  filter: grayscale(0.6);
+}
+
+.flag-marker.captured {
+  opacity: 0.86;
+}
+
+.flag-marker.captured .cloth,
+.flag-marker.captured .number {
+  background: var(--capture);
+  color: #0e2417;
+}
+
+@keyframes flagBob {
+  0%,
+  100% {
+    transform: translate(-50%, -100%) translateY(0);
+  }
+  50% {
+    transform: translate(-50%, -100%) translateY(-7px);
+  }
+}
+
+.player-marker {
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  top: 50%;
+  width: 48px;
+  height: 58px;
+  transform: translate(-50%, -82%);
+  transition: left 260ms ease, top 260ms ease, filter 180ms ease;
+}
+
+.player-marker.outside {
+  filter: drop-shadow(0 0 11px rgba(255, 107, 85, 0.95));
+}
+
+.player-shadow {
+  position: absolute;
+  left: 9px;
+  bottom: 0;
+  width: 30px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.boy {
+  position: absolute;
+  left: 8px;
+  top: 0;
+  width: 32px;
+  height: 52px;
+}
+
+.boy .head {
+  position: absolute;
+  left: 8px;
+  top: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--boy-skin);
+  box-shadow:
+    inset 0 -2px 0 rgba(109, 62, 39, 0.16),
+    0 0 0 3px #33231c;
+}
+
+.boy .hair {
+  position: absolute;
+  left: 7px;
+  top: -1px;
+  width: 18px;
+  height: 9px;
+  border-radius: 12px 12px 4px 4px;
+  background: #322018;
+}
+
+.boy .body {
+  position: absolute;
+  left: 7px;
+  top: 18px;
+  width: 18px;
+  height: 21px;
+  border-radius: 8px 8px 6px 6px;
+  background: linear-gradient(180deg, #55b7ff 0%, var(--boy-shirt) 100%);
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.14);
+}
+
+.boy .arm {
+  position: absolute;
+  top: 20px;
+  width: 8px;
+  height: 18px;
+  border-radius: 8px;
+  background: var(--boy-skin);
+}
+
+.boy .arm.left {
+  left: 1px;
+  transform: rotate(18deg);
+}
+
+.boy .arm.right {
+  right: 1px;
+  transform: rotate(-18deg);
+}
+
+.boy .leg {
+  position: absolute;
+  top: 37px;
+  width: 9px;
+  height: 14px;
+  border-radius: 6px;
+  background: #24323a;
+}
+
+.boy .leg.left {
+  left: 8px;
+}
+
+.boy .leg.right {
+  right: 8px;
+}
+
+.player-pulse {
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(38, 133, 232, 0.6);
+  transform: translate(-50%, 0);
+  animation: pulse 1.6s ease-out infinite;
+}
+
+@keyframes pulse {
+  from {
+    opacity: 0.85;
+    transform: translate(-50%, 0) scale(0.45);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(2.4);
+  }
+}
+
+.map-readout {
+  position: absolute;
+  z-index: 12;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.scale {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(17, 22, 24, 0.76);
+  color: #f9f1dc;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.scale::before {
+  content: "";
+  width: 62px;
+  height: 6px;
+  border-left: 2px solid #fff4d2;
+  border-right: 2px solid #fff4d2;
+  border-bottom: 2px solid #fff4d2;
+}
+
+.compass {
+  display: grid;
+  grid-template-columns: 22px 22px 22px;
+  grid-template-rows: 22px 22px 22px;
+  place-items: center;
+  width: 74px;
+  height: 74px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  background: rgba(17, 22, 24, 0.76);
+  color: #fff8dc;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.compass .n {
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--flag-live);
+}
+
+.compass .e {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.compass .s {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.compass .w {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.needle {
+  grid-column: 2;
+  grid-row: 2;
+  width: 4px;
+  height: 24px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--flag-live) 0 50%, #fff4d2 50% 100%);
+  transform: rotate(var(--heading, 0deg));
+  transform-origin: 50% 50%;
+}
+
+.bottom-hud {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.mission {
+  min-width: 0;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.status-light {
+  flex: 0 0 11px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #7c8580;
+  box-shadow: 0 0 0 5px rgba(124, 133, 128, 0.13);
+}
+
+.status-light.live {
+  background: var(--flag-live);
+  box-shadow: 0 0 0 5px rgba(255, 211, 77, 0.17);
+}
+
+.status-light.capture {
+  background: var(--capture);
+  box-shadow: 0 0 0 5px rgba(89, 217, 137, 0.17);
+}
+
+.status-light.warn {
+  background: var(--danger);
+  box-shadow: 0 0 0 5px rgba(255, 107, 85, 0.16);
+}
+
+#statusText {
+  overflow: hidden;
+  color: #fff8e6;
+  font-size: clamp(16px, 2.7vw, 21px);
+  font-weight: 900;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#subStatus {
+  margin: 5px 0 0 20px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.primary-btn,
+.ghost-btn,
+.pad-btn {
+  min-height: 44px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 900;
+  transition: transform 140ms ease, filter 140ms ease, background 140ms ease;
+}
+
+.primary-btn {
+  padding: 0 18px;
+  background: linear-gradient(180deg, #ffe27a 0%, #f2b737 100%);
+  color: #1d1709;
+  box-shadow: 0 12px 26px rgba(242, 183, 55, 0.22);
+}
+
+.ghost-btn {
+  padding: 0 15px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff6dd;
+}
+
+.primary-btn:hover,
+.ghost-btn:hover,
+.pad-btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.primary-btn:active,
+.ghost-btn:active,
+.pad-btn:active {
+  transform: translateY(1px);
+}
+
+.movement-pad {
+  position: absolute;
+  z-index: 13;
+  right: 12px;
+  top: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, 42px);
+  grid-template-rows: repeat(3, 42px);
+  gap: 5px;
+}
+
+.movement-pad[hidden] {
+  display: none;
+}
+
+.pad-btn {
+  display: grid;
+  place-items: center;
+  min-height: 42px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(17, 22, 24, 0.74);
+  color: #fff5d5;
+}
+
+.pad-btn.north {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.pad-btn.west {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.pad-btn.east {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.pad-btn.south {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.toast {
+  position: fixed;
+  z-index: 30;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  max-width: min(520px, calc(100vw - 28px));
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(17, 22, 24, 0.92);
+  color: #fff8e8;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 16px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.milestone {
+  position: fixed;
+  z-index: 25;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(4, 7, 7, 0.62);
+  backdrop-filter: blur(10px);
+}
+
+.milestone[hidden] {
+  display: none;
+}
+
+.milestone-panel {
+  width: min(420px, 100%);
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 32%),
+    #171c18;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.medal {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 28%, #fff7b7, #f2bb39 62%, #8d5d1c 100%);
+  color: #211805;
+  font-size: 34px;
+  font-weight: 1000;
+  box-shadow: 0 0 0 8px rgba(242, 183, 55, 0.16);
+}
+
+.milestone h2 {
+  margin: 0;
+  color: #fff7dd;
+  font-size: clamp(26px, 7vw, 38px);
+  line-height: 0.96;
+}
+
+.milestone p {
+  margin: 10px auto 16px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.milestone-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .game-shell {
+    grid-template-rows: auto minmax(340px, 1fr) auto;
+    gap: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .top-hud {
+    grid-template-columns: 1fr;
+  }
+
+  .hud-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 0;
+  }
+
+  .map-frame {
+    width: 100%;
+    max-height: calc(100dvh - 330px);
+    min-height: 330px;
+  }
+
+  .bottom-hud {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    justify-content: stretch;
+  }
+
+  .primary-btn,
+  .ghost-btn {
+    flex: 1 1 136px;
+  }
+
+  #statusText {
+    white-space: normal;
+  }
+
+  .movement-pad {
+    grid-template-columns: repeat(3, 38px);
+    grid-template-rows: repeat(3, 38px);
+  }
+}
+
+@media (max-width: 420px) {
+  .brand-mark {
+    flex-basis: 38px;
+    width: 38px;
+    height: 38px;
+  }
+
+  h1 {
+    font-size: 26px;
+  }
+
+  .stat strong {
+    font-size: 18px;
+  }
+
+  .map-readout {
+    align-items: flex-end;
+  }
+
+  .scale {
+    font-size: 11px;
+  }
+
+  .scale::before {
+    width: 46px;
+  }
+
+  .compass {
+    width: 66px;
+    height: 66px;
+  }
+}
 </style>
 </head>
 <body>
-<div class="container">
-<h1>🏁 Flag Hunt</h1>
-<div id="arrow">⬆</div>
-<div id="radar">
-<div class="ring r1"></div>
-<div class="ring r2"></div>
-<div class="crossH"></div>
-<div class="crossV"></div>
-<div class="label n">N</div>
-<div class="label s">S</div>
-<div class="label e">E</div>
-<div class="label w">W</div>
-<div id="player"></div>
-<div id="flag"></div>
-</div>
-<div id="distance">-- m</div>
-<div id="status">Getting GPS...</div>
-<div id="accuracy"></div>
-</div>
+<main class="game-shell">
+  <header class="top-hud">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <div class="title-stack">
+        <p class="kicker">Live outdoor hunt</p>
+        <h1>Flag Hunt</h1>
+      </div>
+    </div>
+    <div class="hud-grid" aria-label="Game stats">
+      <div class="stat">
+        <span>Progress</span>
+        <strong id="progressStat">0/10</strong>
+      </div>
+      <div class="stat">
+        <span>Target</span>
+        <strong id="targetStat">--</strong>
+      </div>
+      <div class="stat">
+        <span>Distance</span>
+        <strong id="distanceStat">-- m</strong>
+      </div>
+      <div class="stat">
+        <span>Score</span>
+        <strong id="scoreStat">0</strong>
+      </div>
+    </div>
+  </header>
+
+  <section class="map-stage" aria-label="Playing map">
+    <div class="map-frame">
+      <div class="game-map" id="gameMap">
+        <div class="road one"></div>
+        <div class="road two"></div>
+        <div class="road three"></div>
+        <div class="map-zone grove"></div>
+        <div class="map-zone court"></div>
+        <div class="map-zone pond"></div>
+        <div class="map-zone plaza"></div>
+        <div class="map-label gate">Gate</div>
+        <div class="map-label lawn">Lawn</div>
+        <div class="map-label pond-label">Pond</div>
+        <div class="map-label court-label">Court</div>
+        <div class="hunt-ring"></div>
+        <div class="trail-layer" id="trailLayer"></div>
+        <div class="flags-layer" id="flagsLayer"></div>
+        <div class="player-marker" id="playerMarker" aria-label="Player location">
+          <div class="player-pulse"></div>
+          <div class="player-shadow"></div>
+          <div class="boy" aria-hidden="true">
+            <div class="hair"></div>
+            <div class="head"></div>
+            <div class="arm left"></div>
+            <div class="arm right"></div>
+            <div class="body"></div>
+            <div class="leg left"></div>
+            <div class="leg right"></div>
+          </div>
+        </div>
+        <div class="map-readout">
+          <div class="scale">20 m</div>
+          <div class="compass" aria-label="Compass">
+            <span class="n">N</span>
+            <span class="e">E</span>
+            <span class="s">S</span>
+            <span class="w">W</span>
+            <span class="needle" id="needle"></span>
+          </div>
+        </div>
+        <div class="movement-pad" id="movementPad" hidden>
+          <button class="pad-btn north" type="button" data-move="north" aria-label="Move north">N</button>
+          <button class="pad-btn west" type="button" data-move="west" aria-label="Move west">W</button>
+          <button class="pad-btn east" type="button" data-move="east" aria-label="Move east">E</button>
+          <button class="pad-btn south" type="button" data-move="south" aria-label="Move south">S</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="bottom-hud">
+    <div class="mission">
+      <div class="status-row">
+        <span class="status-light" id="statusLight"></span>
+        <strong id="statusText">Ready to start</strong>
+      </div>
+      <p id="subStatus">Ten flags will appear inside a 50 m hunt zone.</p>
+    </div>
+    <div class="actions">
+      <button class="primary-btn" id="startBtn" type="button">Start Hunt</button>
+      <button class="ghost-btn" id="practiceBtn" type="button">Practice</button>
+      <button class="ghost-btn hidden" id="resetBtn" type="button">New Run</button>
+    </div>
+  </footer>
+</main>
+
+<section class="milestone" id="milestone" hidden aria-modal="true" role="dialog">
+  <div class="milestone-panel">
+    <div class="medal" id="medalNumber">1</div>
+    <h2 id="milestoneTitle">Milestone</h2>
+    <p id="milestoneCopy">Flag captured.</p>
+    <div class="milestone-actions">
+      <button class="primary-btn" id="nextFlagBtn" type="button">Spawn Next Flag</button>
+      <button class="ghost-btn hidden" id="finishBtn" type="button">Start New Run</button>
+    </div>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-let playerLat, playerLon;
-let flagLat=null, flagLon=null;
-let heading=0;
-let previousDistance=null;
+(() => {
+  "use strict";
 
-const CAPTURE_RADIUS=10;
-const MAX_DISTANCE=60;
+  const FLAG_COUNT = 10;
+  const SPAWN_RADIUS_METERS = 50;
+  const MAP_HALF_METERS = 60;
+  const CAPTURE_RADIUS_METERS = 7;
+  const PRACTICE_STEP_METERS = 4;
+  const METERS_PER_DEGREE_LAT = 111111;
 
-function toRad(v){return v*Math.PI/180;}
+  const els = {
+    progressStat: document.getElementById("progressStat"),
+    targetStat: document.getElementById("targetStat"),
+    distanceStat: document.getElementById("distanceStat"),
+    scoreStat: document.getElementById("scoreStat"),
+    flagsLayer: document.getElementById("flagsLayer"),
+    trailLayer: document.getElementById("trailLayer"),
+    playerMarker: document.getElementById("playerMarker"),
+    statusLight: document.getElementById("statusLight"),
+    statusText: document.getElementById("statusText"),
+    subStatus: document.getElementById("subStatus"),
+    startBtn: document.getElementById("startBtn"),
+    practiceBtn: document.getElementById("practiceBtn"),
+    resetBtn: document.getElementById("resetBtn"),
+    movementPad: document.getElementById("movementPad"),
+    milestone: document.getElementById("milestone"),
+    medalNumber: document.getElementById("medalNumber"),
+    milestoneTitle: document.getElementById("milestoneTitle"),
+    milestoneCopy: document.getElementById("milestoneCopy"),
+    nextFlagBtn: document.getElementById("nextFlagBtn"),
+    finishBtn: document.getElementById("finishBtn"),
+    toast: document.getElementById("toast"),
+    needle: document.getElementById("needle")
+  };
 
-function distance(lat1,lon1,lat2,lon2){
- const R=6371000;
- const dLat=toRad(lat2-lat1);
- const dLon=toRad(lon2-lon1);
- const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
- return R*(2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
-}
+  const state = {
+    mode: "idle",
+    watchId: null,
+    center: null,
+    player: null,
+    flags: [],
+    activeIndex: 0,
+    score: 0,
+    heading: 0,
+    pendingMilestone: false,
+    trail: [],
+    accuracy: null
+  };
 
-function bearing(lat1,lon1,lat2,lon2){
- const y=Math.sin(toRad(lon2-lon1))*Math.cos(toRad(lat2));
- const x=Math.cos(toRad(lat1))*Math.sin(toRad(lat2))-Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(toRad(lon2-lon1));
- return (Math.atan2(y,x)*180/Math.PI+360)%360;
-}
+  function toRad(value) {
+    return value * Math.PI / 180;
+  }
 
-function updateUI(){
- if(playerLat===undefined||flagLat===null) return;
+  function metersPerDegreeLon(lat) {
+    return METERS_PER_DEGREE_LAT * Math.cos(toRad(lat));
+  }
 
- const dist=distance(playerLat,playerLon,flagLat,flagLon);
- document.getElementById("distance").innerText=Math.round(dist)+" m";
+  function distanceMeters(a, b) {
+    const earthRadius = 6371000;
+    const dLat = toRad(b.lat - a.lat);
+    const dLon = toRad(b.lon - a.lon);
+    const lat1 = toRad(a.lat);
+    const lat2 = toRad(b.lat);
+    const h =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+    return earthRadius * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+  }
 
- let trend="";
- if(previousDistance!==null){
-   if(dist<previousDistance-1) trend="✅ Getting closer";
-   else if(dist>previousDistance+1) trend="❌ Moving away";
-   else trend="➡️ Hold course";
- }
- previousDistance=dist;
+  function bearingDegrees(a, b) {
+    const lat1 = toRad(a.lat);
+    const lat2 = toRad(b.lat);
+    const dLon = toRad(b.lon - a.lon);
+    const y = Math.sin(dLon) * Math.cos(lat2);
+    const x =
+      Math.cos(lat1) * Math.sin(lat2) -
+      Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+    return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+  }
 
- const flagBearing=bearing(playerLat,playerLon,flagLat,flagLon);
+  function offsetToPoint(origin, northMeters, eastMeters) {
+    return {
+      lat: origin.lat + northMeters / METERS_PER_DEGREE_LAT,
+      lon: origin.lon + eastMeters / metersPerDegreeLon(origin.lat)
+    };
+  }
 
- const relative=(flagBearing-heading+360)%360;
- document.getElementById("arrow").style.transform=`rotate(${relative}deg)`;
+  function pointToOffset(origin, point) {
+    return {
+      north: (point.lat - origin.lat) * METERS_PER_DEGREE_LAT,
+      east: (point.lon - origin.lon) * metersPerDegreeLon(origin.lat)
+    };
+  }
 
- const radarRadius=120;
- const displayDistance=(Math.min(dist,MAX_DISTANCE)/MAX_DISTANCE)*radarRadius;
+  function offsetToPercent(offset) {
+    const clampedEast = Math.max(-MAP_HALF_METERS, Math.min(MAP_HALF_METERS, offset.east));
+    const clampedNorth = Math.max(-MAP_HALF_METERS, Math.min(MAP_HALF_METERS, offset.north));
+    return {
+      x: 50 + (clampedEast / MAP_HALF_METERS) * 50,
+      y: 50 - (clampedNorth / MAP_HALF_METERS) * 50
+    };
+  }
 
- const radians=flagBearing*Math.PI/180;
- const x=150+displayDistance*Math.sin(radians);
- const y=150-displayDistance*Math.cos(radians);
+  function randomFlagOffsets() {
+    const offsets = [];
+    let attempts = 0;
 
- const flag=document.getElementById("flag");
- flag.style.left=(x-8)+"px";
- flag.style.top=(y-8)+"px";
+    while (offsets.length < FLAG_COUNT && attempts < 500) {
+      attempts += 1;
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 12 + Math.sqrt(Math.random()) * (SPAWN_RADIUS_METERS - 12);
+      const candidate = {
+        north: Math.cos(angle) * radius,
+        east: Math.sin(angle) * radius
+      };
+      const farEnough = offsets.every(existing => {
+        const dn = existing.north - candidate.north;
+        const de = existing.east - candidate.east;
+        return Math.hypot(dn, de) >= 8;
+      });
 
- if(dist<=CAPTURE_RADIUS){
-   document.getElementById("status").innerHTML="🏆 FLAG CAPTURED!";
- }else{
-   document.getElementById("status").innerHTML="🚶 Follow the arrow<br>"+trend;
- }
-}
+      if (farEnough) {
+        offsets.push(candidate);
+      }
+    }
 
-window.addEventListener("deviceorientation",e=>{
- if(e.alpha!=null){
-   heading=360-e.alpha;
-   updateUI();
- }
-},true);
+    while (offsets.length < FLAG_COUNT) {
+      const angle = offsets.length * (Math.PI * 2 / FLAG_COUNT);
+      offsets.push({
+        north: Math.cos(angle) * (SPAWN_RADIUS_METERS - 6),
+        east: Math.sin(angle) * (SPAWN_RADIUS_METERS - 6)
+      });
+    }
 
-navigator.geolocation.watchPosition(
- pos=>{
-   playerLat=pos.coords.latitude;
-   playerLon=pos.coords.longitude;
+    return offsets;
+  }
 
-   document.getElementById("accuracy").innerHTML="GPS Accuracy: "+Math.round(pos.coords.accuracy)+"m";
+  function spawnFlags(center) {
+    state.flags = randomFlagOffsets().map((offset, index) => ({
+      id: index + 1,
+      ...offsetToPoint(center, offset.north, offset.east),
+      captured: false
+    }));
+    state.activeIndex = 0;
+    state.pendingMilestone = false;
+  }
 
-   if(flagLat===null){
-     const angle=Math.random()*360;
-     const meters=30+Math.random()*20;
+  function beginRun(origin, mode) {
+    state.mode = mode;
+    document.body.classList.toggle("practice-mode", mode === "practice");
+    state.center = { ...origin };
+    state.player = { ...origin };
+    state.score = 0;
+    state.trail = [];
+    state.accuracy = null;
+    spawnFlags(state.center);
+    els.resetBtn.classList.remove("hidden");
+    els.movementPad.hidden = mode !== "practice";
+    setStatus("Flag 1 is live", "Find the highlighted flag inside the 50 m zone.", "live");
+    render();
+  }
 
-     const dLat=(meters/111111)*Math.cos(angle*Math.PI/180);
-     const dLon=(meters/(111111*Math.cos(playerLat*Math.PI/180)))*Math.sin(angle*Math.PI/180);
+  async function startGps() {
+    if (!("geolocation" in navigator)) {
+      setStatus("GPS is unavailable", "Practice mode is ready on this device.", "warn");
+      showToast("GPS is unavailable here.");
+      return;
+    }
 
-     flagLat=playerLat+dLat;
-     flagLon=playerLon+dLon;
-   }
-   updateUI();
- },
- ()=>{
-   document.getElementById("status").innerHTML="Location permission required";
- },
- {enableHighAccuracy:true,maximumAge:0,timeout:15000}
-);
+    els.startBtn.disabled = true;
+    els.startBtn.textContent = "Locating...";
+    setStatus("Locking location", "Waiting for a high accuracy position.", "live");
+
+    await requestCompassPermission();
+
+    if (state.watchId !== null) {
+      navigator.geolocation.clearWatch(state.watchId);
+    }
+
+    state.watchId = navigator.geolocation.watchPosition(
+      position => {
+        const coords = {
+          lat: position.coords.latitude,
+          lon: position.coords.longitude
+        };
+        state.accuracy = position.coords.accuracy;
+
+        if (!state.center || state.mode !== "gps") {
+          beginRun(coords, "gps");
+        } else {
+          state.player = coords;
+          pushTrail(coords);
+          render();
+          checkCapture();
+        }
+
+        els.startBtn.disabled = false;
+        els.startBtn.textContent = "GPS Active";
+      },
+      error => {
+        els.startBtn.disabled = false;
+        els.startBtn.textContent = "Start Hunt";
+        const message = error.code === error.PERMISSION_DENIED
+          ? "Location permission blocked"
+          : "Location signal lost";
+        setStatus(message, "Practice mode is ready while GPS is unavailable.", "warn");
+        showToast(message);
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 1000,
+        timeout: 12000
+      }
+    );
+  }
+
+  async function requestCompassPermission() {
+    if (
+      typeof DeviceOrientationEvent !== "undefined" &&
+      typeof DeviceOrientationEvent.requestPermission === "function"
+    ) {
+      try {
+        await DeviceOrientationEvent.requestPermission();
+      } catch (error) {
+        return;
+      }
+    }
+  }
+
+  function startPractice() {
+    if (state.watchId !== null && "geolocation" in navigator) {
+      navigator.geolocation.clearWatch(state.watchId);
+      state.watchId = null;
+    }
+
+    beginRun({ lat: 10.000000, lon: 76.000000 }, "practice");
+    els.startBtn.textContent = "Start Hunt";
+    els.startBtn.disabled = false;
+  }
+
+  function movePractice(direction) {
+    if (state.mode !== "practice" || !state.player || state.pendingMilestone) {
+      return;
+    }
+
+    const moves = {
+      north: [PRACTICE_STEP_METERS, 0],
+      south: [-PRACTICE_STEP_METERS, 0],
+      east: [0, PRACTICE_STEP_METERS],
+      west: [0, -PRACTICE_STEP_METERS]
+    };
+    const move = moves[direction];
+
+    if (!move) {
+      return;
+    }
+
+    state.player = offsetToPoint(state.player, move[0], move[1]);
+    pushTrail(state.player);
+    render();
+    checkCapture();
+  }
+
+  function pushTrail(point) {
+    if (!state.center) {
+      return;
+    }
+
+    state.trail.push({ ...point });
+    if (state.trail.length > 36) {
+      state.trail.shift();
+    }
+  }
+
+  function currentFlag() {
+    return state.flags[state.activeIndex] || null;
+  }
+
+  function checkCapture() {
+    if (!state.player || !currentFlag() || state.pendingMilestone) {
+      return;
+    }
+
+    const flag = currentFlag();
+    const dist = distanceMeters(state.player, flag);
+
+    if (dist <= CAPTURE_RADIUS_METERS) {
+      captureFlag(flag, dist);
+    }
+  }
+
+  function captureFlag(flag, dist) {
+    flag.captured = true;
+    state.pendingMilestone = true;
+    const capturedCount = state.flags.filter(item => item.captured).length;
+    const bonus = Math.max(50, 300 - Math.round(dist * 25));
+    state.score += 500 + bonus;
+
+    render();
+    setStatus(`Flag ${flag.id} captured`, `${capturedCount}/${FLAG_COUNT} milestones reached.`, "capture");
+    showMilestone(flag, capturedCount);
+  }
+
+  function showMilestone(flag, capturedCount) {
+    const complete = capturedCount >= FLAG_COUNT;
+    els.medalNumber.textContent = String(capturedCount);
+    els.milestoneTitle.textContent = complete ? "Run Complete" : "Milestone Reached";
+    els.milestoneCopy.textContent = complete
+      ? `All ${FLAG_COUNT} flags captured. Final score: ${state.score}.`
+      : `Flag ${flag.id} captured. Score: ${state.score}.`;
+    els.nextFlagBtn.classList.toggle("hidden", complete);
+    els.finishBtn.classList.toggle("hidden", !complete);
+    els.milestone.hidden = false;
+  }
+
+  function spawnNextFlag() {
+    const nextIndex = state.flags.findIndex(flag => !flag.captured);
+    state.pendingMilestone = false;
+    els.milestone.hidden = true;
+
+    if (nextIndex === -1) {
+      setStatus("Run complete", `Final score: ${state.score}.`, "capture");
+      render();
+      return;
+    }
+
+    state.activeIndex = nextIndex;
+    setStatus(`Flag ${state.flags[nextIndex].id} is live`, "Next milestone active.", "live");
+    render();
+  }
+
+  function resetRun() {
+    if (!state.player) {
+      startPractice();
+      return;
+    }
+
+    const origin = { ...state.player };
+    const mode = state.mode === "gps" ? "gps" : "practice";
+    beginRun(origin, mode);
+    els.milestone.hidden = true;
+  }
+
+  function render() {
+    renderStats();
+    renderFlags();
+    renderTrail();
+    renderPlayer();
+  }
+
+  function renderStats() {
+    const capturedCount = state.flags.filter(flag => flag.captured).length;
+    const flag = currentFlag();
+    const distance = state.player && flag && !flag.captured
+      ? distanceMeters(state.player, flag)
+      : null;
+
+    els.progressStat.textContent = `${capturedCount}/${FLAG_COUNT}`;
+    els.targetStat.textContent = flag && !flag.captured ? `Flag ${flag.id}` : "--";
+    els.distanceStat.textContent = distance === null ? "-- m" : `${Math.round(distance)} m`;
+    els.scoreStat.textContent = String(state.score);
+
+    if (state.player && flag && !state.pendingMilestone) {
+      const accuracy = state.accuracy ? `GPS +/- ${Math.round(state.accuracy)} m.` : "";
+      if (distance <= CAPTURE_RADIUS_METERS + 4) {
+        setStatus(`Flag ${flag.id} is close`, `${Math.max(0, Math.round(distance))} m from capture. ${accuracy}`.trim(), "live");
+      } else if (state.mode !== "idle") {
+        setStatus(`Flag ${flag.id} is live`, `${Math.round(distance)} m away. ${accuracy}`.trim(), "live");
+      }
+    }
+  }
+
+  function renderFlags() {
+    if (!state.center) {
+      els.flagsLayer.innerHTML = "";
+      return;
+    }
+
+    els.flagsLayer.innerHTML = state.flags.map((flag, index) => {
+      const offset = pointToOffset(state.center, flag);
+      const point = offsetToPercent(offset);
+      const status = flag.captured
+        ? "captured"
+        : index === state.activeIndex
+          ? "active"
+          : "locked";
+      return `
+        <div class="flag-marker ${status}" style="left:${point.x}%;top:${point.y}%;" aria-label="Flag ${flag.id}">
+          <span class="base"></span>
+          <span class="pole"></span>
+          <span class="cloth"></span>
+          <span class="number">${flag.id}</span>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderTrail() {
+    if (!state.center || state.trail.length === 0) {
+      els.trailLayer.innerHTML = "";
+      return;
+    }
+
+    els.trailLayer.innerHTML = state.trail.map((point, index) => {
+      const offset = pointToOffset(state.center, point);
+      const pos = offsetToPercent(offset);
+      const opacity = (index + 1) / state.trail.length;
+      return `<span class="trail-dot" style="left:${pos.x}%;top:${pos.y}%;opacity:${opacity};"></span>`;
+    }).join("");
+  }
+
+  function renderPlayer() {
+    if (!state.center || !state.player) {
+      return;
+    }
+
+    const offset = pointToOffset(state.center, state.player);
+    const pos = offsetToPercent(offset);
+    const outside = Math.hypot(offset.north, offset.east) > SPAWN_RADIUS_METERS + 8;
+    els.playerMarker.style.left = `${pos.x}%`;
+    els.playerMarker.style.top = `${pos.y}%`;
+    els.playerMarker.classList.toggle("outside", outside);
+
+    if (outside && !state.pendingMilestone) {
+      setStatus("Outside hunt zone", "Return to the 50 m play area.", "warn");
+    }
+  }
+
+  function setStatus(title, detail, kind) {
+    els.statusText.textContent = title;
+    els.subStatus.textContent = detail || "";
+    els.statusLight.className = `status-light ${kind || ""}`.trim();
+  }
+
+  function showToast(message) {
+    els.toast.textContent = message;
+    els.toast.classList.add("show");
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => {
+      els.toast.classList.remove("show");
+    }, 2200);
+  }
+
+  window.addEventListener("deviceorientation", event => {
+    if (event.alpha == null) {
+      return;
+    }
+
+    state.heading = 360 - event.alpha;
+    els.needle.style.setProperty("--heading", `${state.heading}deg`);
+  }, true);
+
+  window.addEventListener("keydown", event => {
+    const keys = {
+      ArrowUp: "north",
+      w: "north",
+      W: "north",
+      ArrowDown: "south",
+      s: "south",
+      S: "south",
+      ArrowLeft: "west",
+      a: "west",
+      A: "west",
+      ArrowRight: "east",
+      d: "east",
+      D: "east"
+    };
+
+    if (keys[event.key]) {
+      event.preventDefault();
+      movePractice(keys[event.key]);
+    }
+  });
+
+  els.startBtn.addEventListener("click", startGps);
+  els.practiceBtn.addEventListener("click", startPractice);
+  els.resetBtn.addEventListener("click", resetRun);
+  els.nextFlagBtn.addEventListener("click", spawnNextFlag);
+  els.finishBtn.addEventListener("click", resetRun);
+  els.movementPad.addEventListener("click", event => {
+    const button = event.target.closest("[data-move]");
+    if (button) {
+      movePractice(button.dataset.move);
+    }
+  });
+
+  render();
+})();
 </script>
 </body>
 </html>
