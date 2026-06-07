@@ -3,27 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Flag Hunt</title>
+<title>Flag Hunt App Prototype</title>
 <style>
 :root {
   color-scheme: dark;
-  --panel: rgba(17, 22, 24, 0.9);
-  --panel-strong: #111618;
-  --ink: #f5f8ef;
-  --muted: #aeb8aa;
-  --line: rgba(255, 255, 255, 0.12);
-  --grass: #77a66c;
-  --grass-dark: #517c53;
-  --road: #d7caaa;
-  --road-edge: #a99472;
-  --water: #5aa8c8;
-  --flag: #f04d37;
-  --flag-live: #ffd34d;
-  --boy-shirt: #2685e8;
-  --boy-skin: #d79868;
-  --capture: #59d989;
-  --danger: #ff6b55;
-  --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+  --bg: #0f1511;
+  --panel: rgba(17, 23, 19, 0.9);
+  --panel-solid: #151d17;
+  --panel-soft: rgba(255, 255, 255, 0.07);
+  --line: rgba(255, 255, 255, 0.14);
+  --ink: #fff8e5;
+  --muted: #b8c2b3;
+  --grass-a: #77aa63;
+  --grass-b: #5f9559;
+  --grass-c: #3f743d;
+  --gold: #ffd452;
+  --gold-dark: #d69a24;
+  --flag: #f05238;
+  --capture: #66dc91;
+  --danger: #ff715e;
+  --boy-shirt: #2488ee;
+  --boy-skin: #d99a6a;
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
 }
 
 * {
@@ -39,8 +40,9 @@ body {
   margin: 0;
   overflow-x: hidden;
   background:
-    linear-gradient(145deg, rgba(43, 55, 35, 0.25), transparent 35%),
-    linear-gradient(180deg, #121716 0%, #171b15 48%, #101212 100%);
+    radial-gradient(circle at 16% 12%, rgba(255, 212, 82, 0.13), transparent 24%),
+    radial-gradient(circle at 92% 10%, rgba(102, 220, 145, 0.12), transparent 23%),
+    linear-gradient(180deg, #121914 0%, var(--bg) 100%);
   color: var(--ink);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   letter-spacing: 0;
@@ -52,39 +54,43 @@ button {
   font: inherit;
 }
 
-.game-shell {
-  min-height: 100dvh;
-  display: grid;
-  grid-template-rows: auto minmax(360px, 1fr) auto;
-  gap: 12px;
-  padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+.hidden {
+  display: none !important;
 }
 
-.top-hud,
-.bottom-hud {
-  width: min(1100px, 100%);
+.app {
+  min-height: 100dvh;
+}
+
+.lobby-screen {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 16px;
+  width: min(1120px, 100%);
   margin: 0 auto;
+  padding: max(16px, env(safe-area-inset-top)) 14px max(16px, env(safe-area-inset-bottom));
+}
+
+.lobby-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 72px;
+  padding: 12px;
   border: 1px solid var(--line);
+  border-radius: 8px;
   background: var(--panel);
   box-shadow: var(--shadow);
   backdrop-filter: blur(18px);
 }
 
-.top-hud {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 14px;
-  align-items: center;
-  min-height: 74px;
-  padding: 12px;
-  border-radius: 8px;
-}
-
 .brand {
   display: flex;
   align-items: center;
-  min-width: 0;
   gap: 12px;
+  min-width: 0;
 }
 
 .brand-mark {
@@ -92,9 +98,9 @@ button {
   flex: 0 0 42px;
   width: 42px;
   height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 8px;
-  background: linear-gradient(135deg, #26312d 0%, #485f45 100%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(135deg, #263a2f 0%, #466a42 100%);
 }
 
 .brand-mark::before {
@@ -105,7 +111,7 @@ button {
   width: 3px;
   height: 27px;
   border-radius: 2px;
-  background: #f7efe1;
+  background: #fff4d1;
 }
 
 .brand-mark::after {
@@ -113,388 +119,479 @@ button {
   position: absolute;
   left: 16px;
   top: 9px;
-  width: 17px;
-  height: 12px;
-  border-radius: 2px 6px 6px 2px;
+  width: 18px;
+  height: 13px;
+  border-radius: 2px 7px 7px 2px;
   background: var(--flag);
-  box-shadow: 0 12px 0 -5px var(--flag-live);
-}
-
-.title-stack {
-  min-width: 0;
+  box-shadow: 0 13px 0 -6px var(--gold);
 }
 
 .kicker {
   margin: 0;
-  color: var(--flag-live);
+  color: var(--gold);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
 h1 {
-  margin: 2px 0 0;
+  margin-bottom: 0;
   overflow: hidden;
+  color: #fff9e8;
+  font-size: clamp(28px, 5vw, 42px);
+  line-height: 0.96;
   text-overflow: ellipsis;
-  color: #fff9e6;
-  font-size: clamp(24px, 5vw, 38px);
-  line-height: 0.95;
   white-space: nowrap;
 }
 
-.hud-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(82px, 1fr));
+.server-pill {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
-  min-width: min(560px, 48vw);
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8f0d7;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
 }
 
-.stat {
-  min-height: 48px;
-  padding: 8px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.11);
+.server-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #838b82;
+  box-shadow: 0 0 0 5px rgba(131, 139, 130, 0.14);
+}
+
+.server-dot.online {
+  background: var(--capture);
+  box-shadow: 0 0 0 5px rgba(102, 220, 145, 0.15);
+}
+
+.lobby-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+  gap: 14px;
+  align-content: start;
+}
+
+.panel {
+  border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
 }
 
-.stat span {
+.profile-panel {
+  min-height: 360px;
+  padding: 18px;
+}
+
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 58px;
+  width: 58px;
+  height: 58px;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent),
+    #294130;
+  color: var(--gold);
+  font-size: 21px;
+  font-weight: 1000;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+.profile-title {
+  min-width: 0;
+}
+
+.profile-title h2 {
+  margin: 0;
+  color: #fff9e8;
+  font-size: clamp(24px, 5vw, 34px);
+  line-height: 1;
+}
+
+.profile-title p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.metric-board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.metric {
+  min-height: 84px;
+  padding: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.metric:nth-child(odd) {
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.metric:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.metric span {
   display: block;
   color: var(--muted);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.11em;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
-.stat strong {
+.metric strong {
   display: block;
-  margin-top: 3px;
+  margin-top: 7px;
   overflow: hidden;
   color: #fff;
-  font-size: 20px;
+  font-size: clamp(24px, 5vw, 34px);
   line-height: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.map-stage {
-  position: relative;
+.mission-strip {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(255, 212, 82, 0.12), transparent 44%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.mission-strip h3 {
+  margin: 0 0 7px;
+  color: #fff4d0;
+  font-size: 18px;
+}
+
+.mission-strip p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.side-stack {
   display: grid;
-  place-items: center;
-  width: min(1100px, 100%);
-  min-height: 0;
-  margin: 0 auto;
+  gap: 14px;
 }
 
-.map-frame {
-  position: relative;
-  width: min(100%, 900px);
-  aspect-ratio: 1 / 1;
-  max-height: calc(100dvh - 236px);
-  min-height: 350px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 8px;
-  background: #6a9a61;
-  box-shadow:
-    inset 0 0 0 1px rgba(0, 0, 0, 0.25),
-    0 28px 72px rgba(0, 0, 0, 0.42);
+.leaderboard-panel,
+.system-panel {
+  padding: 16px;
 }
 
-.game-map {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 18% 16%, rgba(255, 229, 128, 0.3) 0 7%, transparent 8%),
-    radial-gradient(circle at 78% 78%, rgba(90, 168, 200, 0.58) 0 11%, transparent 12%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 25%, transparent 25% 50%, rgba(255, 255, 255, 0.08) 50% 75%, transparent 75%) 0 0 / 58px 58px,
-    linear-gradient(180deg, var(--grass) 0%, #6d9d64 100%);
+.panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
-.game-map::before,
-.game-map::after {
-  content: "";
-  position: absolute;
-  z-index: 1;
-  left: 50%;
-  top: 50%;
-  width: 140%;
-  height: 34px;
-  border: 2px solid rgba(82, 65, 41, 0.2);
-  background: linear-gradient(180deg, #e8dbbb 0%, var(--road) 100%);
-  box-shadow:
-    0 0 0 1px rgba(68, 54, 31, 0.24),
-    0 7px 0 rgba(0, 0, 0, 0.06);
-  transform-origin: center;
+.panel-title h2 {
+  margin: 0;
+  color: #fff9e8;
+  font-size: 21px;
 }
 
-.game-map::before {
-  transform: translate(-50%, -50%) rotate(18deg);
-}
-
-.game-map::after {
-  transform: translate(-50%, -50%) rotate(-55deg);
-}
-
-.road {
-  position: absolute;
-  z-index: 2;
-  width: 120%;
-  height: 24px;
-  border-top: 2px dashed rgba(97, 80, 53, 0.36);
-  border-bottom: 2px dashed rgba(97, 80, 53, 0.36);
-  background: rgba(230, 218, 188, 0.92);
-  transform-origin: center;
-}
-
-.road.one {
-  left: -8%;
-  top: 19%;
-  transform: rotate(-7deg);
-}
-
-.road.two {
-  left: -12%;
-  top: 72%;
-  transform: rotate(10deg);
-}
-
-.road.three {
-  left: -10%;
-  top: 44%;
-  transform: rotate(86deg);
-}
-
-.map-zone {
-  position: absolute;
-  z-index: 3;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
-}
-
-.map-zone.grove {
-  left: 7%;
-  top: 55%;
-  width: 25%;
-  height: 24%;
-  border-radius: 48% 42% 38% 46%;
-  background:
-    radial-gradient(circle at 34% 32%, #315d35 0 14%, transparent 15%),
-    radial-gradient(circle at 62% 54%, #315d35 0 17%, transparent 18%),
-    radial-gradient(circle at 46% 70%, #315d35 0 12%, transparent 13%),
-    #4f874e;
-}
-
-.map-zone.court {
-  right: 9%;
-  top: 11%;
-  width: 22%;
-  height: 18%;
-  border-radius: 8px;
-  background:
-    linear-gradient(90deg, transparent 48%, rgba(255, 255, 255, 0.5) 49% 51%, transparent 52%),
-    linear-gradient(0deg, transparent 48%, rgba(255, 255, 255, 0.42) 49% 51%, transparent 52%),
-    #ba6e4f;
-}
-
-.map-zone.pond {
-  right: 8%;
-  bottom: 8%;
-  width: 23%;
-  height: 19%;
-  border-radius: 48% 55% 45% 42%;
-  background:
-    radial-gradient(circle at 55% 40%, rgba(255, 255, 255, 0.35), transparent 18%),
-    linear-gradient(135deg, #69c3da 0%, var(--water) 100%);
-}
-
-.map-zone.plaza {
-  left: 36%;
-  top: 34%;
-  width: 25%;
-  height: 17%;
-  border-radius: 8px;
-  background:
-    linear-gradient(45deg, rgba(130, 108, 72, 0.28) 25%, transparent 25% 50%, rgba(130, 108, 72, 0.28) 50% 75%, transparent 75%) 0 0 / 28px 28px,
-    #d4bd8f;
-}
-
-.map-label {
-  position: absolute;
-  z-index: 4;
-  padding: 3px 6px;
-  border-radius: 5px;
-  background: rgba(17, 22, 24, 0.64);
-  color: #f7f1db;
-  font-size: clamp(10px, 1.7vw, 12px);
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  pointer-events: none;
-}
-
-.map-label.gate {
-  left: 12%;
-  top: 13%;
-}
-
-.map-label.lawn {
-  left: 44%;
-  top: 58%;
-}
-
-.map-label.pond-label {
-  right: 12%;
-  bottom: 16%;
-}
-
-.map-label.court-label {
-  right: 13%;
-  top: 17%;
-}
-
-.practice-mode .map-label.court-label {
-  display: none;
-}
-
-.hunt-ring,
-.hunt-ring::before,
-.hunt-ring::after {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.hunt-ring {
-  z-index: 5;
-  left: 50%;
-  top: 50%;
-  width: 83.333%;
-  height: 83.333%;
-  border: 2px solid rgba(255, 255, 255, 0.58);
-  background: rgba(255, 255, 255, 0.03);
-  transform: translate(-50%, -50%);
-}
-
-.hunt-ring::before {
-  content: "";
-  inset: 24%;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-}
-
-.hunt-ring::after {
-  content: "50 m";
-  right: 6%;
-  top: 50%;
-  padding: 3px 7px;
-  border-radius: 5px;
-  background: rgba(17, 22, 24, 0.7);
-  color: #fff9dc;
+.panel-title span {
+  color: var(--gold);
   font-size: 12px;
   font-weight: 900;
-  transform: translateY(-50%);
+  text-transform: uppercase;
 }
 
-.trail-layer,
-.flags-layer {
+.leaderboard {
+  display: grid;
+  gap: 8px;
+}
+
+.leader-row {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 46px;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.leader-row.you {
+  border-color: rgba(255, 212, 82, 0.45);
+  background: rgba(255, 212, 82, 0.1);
+}
+
+.rank-num {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--gold);
+  font-weight: 1000;
+}
+
+.leader-name {
+  overflow: hidden;
+  color: #fff;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leader-score {
+  color: #fff3d0;
+  font-weight: 900;
+}
+
+.system-list {
+  display: grid;
+  gap: 10px;
+}
+
+.system-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.system-line:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.system-line strong {
+  color: #fff5d6;
+}
+
+.lobby-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.primary-btn,
+.ghost-btn,
+.danger-btn,
+.pad-btn,
+.mini-btn {
+  min-height: 46px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 1000;
+  transition: transform 140ms ease, filter 140ms ease, opacity 140ms ease;
+}
+
+.primary-btn {
+  min-width: 170px;
+  padding: 0 18px;
+  background: linear-gradient(180deg, #ffe987 0%, var(--gold) 48%, var(--gold-dark) 100%);
+  color: #201704;
+  box-shadow: 0 16px 32px rgba(255, 212, 82, 0.2);
+}
+
+.ghost-btn,
+.danger-btn,
+.mini-btn {
+  padding: 0 15px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff6dd;
+}
+
+.danger-btn {
+  border-color: rgba(255, 113, 94, 0.3);
+  color: #ffd2ca;
+}
+
+.primary-btn:hover,
+.ghost-btn:hover,
+.danger-btn:hover,
+.pad-btn:hover,
+.mini-btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.primary-btn:active,
+.ghost-btn:active,
+.danger-btn:active,
+.pad-btn:active,
+.mini-btn:active {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none !important;
+}
+
+.play-screen {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #5f9559;
+}
+
+.play-map {
   position: absolute;
   inset: 0;
-  z-index: 7;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 24% 20%, rgba(54, 112, 52, 0.72) 0 9%, transparent 16%),
+    radial-gradient(circle at 74% 72%, rgba(47, 101, 50, 0.62) 0 10%, transparent 18%),
+    radial-gradient(circle at 12% 84%, rgba(49, 93, 48, 0.65) 0 13%, transparent 22%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 25%, transparent 25% 50%, rgba(255, 255, 255, 0.08) 50% 75%, transparent 75%) 0 0 / 70px 70px,
+    linear-gradient(180deg, var(--grass-a), var(--grass-b));
+}
+
+.play-map::before {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  background:
+    radial-gradient(ellipse at 30% 40%, rgba(255, 255, 255, 0.12) 0 1px, transparent 2px) 0 0 / 32px 26px,
+    linear-gradient(108deg, transparent 0 42%, rgba(30, 76, 36, 0.16) 43% 45%, transparent 46% 100%) 0 0 / 42px 42px;
+  opacity: 0.75;
+}
+
+.play-map::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.18), transparent 28%, transparent 68%, rgba(0, 0, 0, 0.28)),
+    radial-gradient(circle at 50% 50%, transparent 0 44%, rgba(13, 22, 15, 0.2) 100%);
   pointer-events: none;
 }
 
-.trail-dot {
+.home-glow {
   position: absolute;
-  width: 5px;
-  height: 5px;
+  z-index: 2;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: rgba(23, 74, 110, 0.42);
+  border: 2px solid rgba(255, 244, 208, 0.55);
+  background: rgba(255, 212, 82, 0.18);
+  box-shadow: 0 0 36px rgba(255, 212, 82, 0.26);
   transform: translate(-50%, -50%);
+}
+
+.flag-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
 }
 
 .flag-marker {
   position: absolute;
-  width: 38px;
-  height: 44px;
+  width: 44px;
+  height: 54px;
   transform: translate(-50%, -100%);
-  transition: left 240ms ease, top 240ms ease, opacity 180ms ease, filter 180ms ease;
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.26)) drop-shadow(0 0 13px rgba(255, 212, 82, 0.7));
+  animation: flagBob 1.4s ease-in-out infinite;
 }
 
 .flag-marker .pole {
   position: absolute;
-  left: 17px;
+  left: 19px;
   top: 8px;
-  width: 4px;
-  height: 31px;
-  border-radius: 3px;
-  background: #fff7df;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  width: 5px;
+  height: 38px;
+  border-radius: 4px;
+  background: #fff5d8;
 }
 
 .flag-marker .cloth {
   position: absolute;
-  left: 20px;
+  left: 23px;
   top: 8px;
-  width: 19px;
-  height: 14px;
-  border-radius: 2px 7px 7px 2px;
+  width: 23px;
+  height: 16px;
+  border-radius: 2px 8px 8px 2px;
   background: var(--flag);
-  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.13);
 }
 
 .flag-marker .base {
   position: absolute;
   left: 10px;
-  bottom: 2px;
-  width: 18px;
-  height: 8px;
+  bottom: 1px;
+  width: 24px;
+  height: 10px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.26);
+  background: rgba(0, 0, 0, 0.24);
 }
 
 .flag-marker .number {
   position: absolute;
-  left: 0;
-  top: 0;
+  left: -3px;
+  top: -1px;
   display: grid;
   place-items: center;
-  width: 19px;
-  height: 19px;
+  width: 23px;
+  height: 23px;
   border-radius: 50%;
-  background: #161b18;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 900;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.84);
-}
-
-.flag-marker.active {
-  z-index: 9;
-  filter: drop-shadow(0 0 12px rgba(255, 211, 77, 0.9));
-  animation: flagBob 1.4s ease-in-out infinite;
-}
-
-.flag-marker.active .cloth,
-.flag-marker.active .number {
-  background: var(--flag-live);
-  color: #1a1711;
-}
-
-.flag-marker.locked {
-  opacity: 0.5;
-  filter: grayscale(0.6);
-}
-
-.flag-marker.captured {
-  opacity: 0.86;
-}
-
-.flag-marker.captured .cloth,
-.flag-marker.captured .number {
-  background: var(--capture);
-  color: #0e2417;
+  background: var(--gold);
+  color: #1b1404;
+  font-size: 12px;
+  font-weight: 1000;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.86);
 }
 
 @keyframes flagBob {
@@ -509,47 +606,72 @@ h1 {
 
 .player-marker {
   position: absolute;
-  z-index: 10;
+  z-index: 7;
   left: 50%;
   top: 50%;
-  width: 48px;
-  height: 58px;
+  width: 54px;
+  height: 68px;
   transform: translate(-50%, -82%);
-  transition: left 260ms ease, top 260ms ease, filter 180ms ease;
+  transition: left 240ms ease, top 240ms ease, filter 140ms ease;
 }
 
 .player-marker.outside {
-  filter: drop-shadow(0 0 11px rgba(255, 107, 85, 0.95));
+  filter: drop-shadow(0 0 13px rgba(255, 113, 94, 0.95));
+}
+
+.direction-arrow {
+  position: absolute;
+  left: 50%;
+  top: -31px;
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 28px solid var(--gold);
+  filter: drop-shadow(0 5px 6px rgba(0, 0, 0, 0.34));
+  transform: translateX(-50%) rotate(var(--arrow-rotation, 0deg));
+  transform-origin: 50% 46px;
+}
+
+.direction-arrow::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 16px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #231b08;
 }
 
 .player-shadow {
   position: absolute;
-  left: 9px;
+  left: 10px;
   bottom: 0;
-  width: 30px;
-  height: 10px;
+  width: 34px;
+  height: 11px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.24);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .boy {
   position: absolute;
-  left: 8px;
-  top: 0;
-  width: 32px;
-  height: 52px;
+  left: 10px;
+  top: 3px;
+  width: 34px;
+  height: 58px;
 }
 
 .boy .head {
   position: absolute;
   left: 8px;
   top: 0;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: var(--boy-skin);
   box-shadow:
-    inset 0 -2px 0 rgba(109, 62, 39, 0.16),
+    inset 0 -2px 0 rgba(109, 62, 39, 0.18),
     0 0 0 3px #33231c;
 }
 
@@ -557,8 +679,8 @@ h1 {
   position: absolute;
   left: 7px;
   top: -1px;
-  width: 18px;
-  height: 9px;
+  width: 20px;
+  height: 10px;
   border-radius: 12px 12px 4px 4px;
   background: #322018;
 }
@@ -566,19 +688,19 @@ h1 {
 .boy .body {
   position: absolute;
   left: 7px;
-  top: 18px;
-  width: 18px;
-  height: 21px;
+  top: 21px;
+  width: 20px;
+  height: 23px;
   border-radius: 8px 8px 6px 6px;
-  background: linear-gradient(180deg, #55b7ff 0%, var(--boy-shirt) 100%);
+  background: linear-gradient(180deg, #5abaff 0%, var(--boy-shirt) 100%);
   box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.14);
 }
 
 .boy .arm {
   position: absolute;
-  top: 20px;
+  top: 23px;
   width: 8px;
-  height: 18px;
+  height: 19px;
   border-radius: 8px;
   background: var(--boy-skin);
 }
@@ -595,239 +717,120 @@ h1 {
 
 .boy .leg {
   position: absolute;
-  top: 37px;
-  width: 9px;
-  height: 14px;
+  top: 42px;
+  width: 10px;
+  height: 15px;
   border-radius: 6px;
   background: #24323a;
 }
 
 .boy .leg.left {
-  left: 8px;
+  left: 7px;
 }
 
 .boy .leg.right {
-  right: 8px;
+  right: 7px;
 }
 
 .player-pulse {
   position: absolute;
   left: 50%;
   bottom: 3px;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  border: 2px solid rgba(38, 133, 232, 0.6);
+  border: 2px solid rgba(36, 136, 238, 0.62);
   transform: translate(-50%, 0);
   animation: pulse 1.6s ease-out infinite;
 }
 
 @keyframes pulse {
   from {
-    opacity: 0.85;
+    opacity: 0.9;
     transform: translate(-50%, 0) scale(0.45);
   }
   to {
     opacity: 0;
-    transform: translate(-50%, 0) scale(2.4);
+    transform: translate(-50%, 0) scale(2.5);
   }
 }
 
-.map-readout {
+.play-hud {
   position: absolute;
   z-index: 12;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
-  display: flex;
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+  top: max(12px, env(safe-area-inset-top));
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 8px;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
   pointer-events: none;
 }
 
-.scale {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 9px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+.play-chip {
+  min-height: 54px;
+  padding: 9px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
-  background: rgba(17, 22, 24, 0.76);
-  color: #f9f1dc;
-  font-size: 12px;
-  font-weight: 900;
+  background: rgba(15, 21, 17, 0.78);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.23);
+  backdrop-filter: blur(14px);
 }
 
-.scale::before {
-  content: "";
-  width: 62px;
-  height: 6px;
-  border-left: 2px solid #fff4d2;
-  border-right: 2px solid #fff4d2;
-  border-bottom: 2px solid #fff4d2;
-}
-
-.compass {
-  display: grid;
-  grid-template-columns: 22px 22px 22px;
-  grid-template-rows: 22px 22px 22px;
-  place-items: center;
-  width: 74px;
-  height: 74px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 50%;
-  background: rgba(17, 22, 24, 0.76);
-  color: #fff8dc;
+.play-chip span {
+  display: block;
+  color: #d4dfce;
   font-size: 10px;
   font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
-.compass .n {
-  grid-column: 2;
-  grid-row: 1;
-  color: var(--flag-live);
-}
-
-.compass .e {
-  grid-column: 3;
-  grid-row: 2;
-}
-
-.compass .s {
-  grid-column: 2;
-  grid-row: 3;
-}
-
-.compass .w {
-  grid-column: 1;
-  grid-row: 2;
-}
-
-.needle {
-  grid-column: 2;
-  grid-row: 2;
-  width: 4px;
-  height: 24px;
-  border-radius: 4px;
-  background: linear-gradient(180deg, var(--flag-live) 0 50%, #fff4d2 50% 100%);
-  transform: rotate(var(--heading, 0deg));
-  transform-origin: 50% 50%;
-}
-
-.bottom-hud {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: center;
-  padding: 12px;
-  border-radius: 8px;
-}
-
-.mission {
-  min-width: 0;
-}
-
-.status-row {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  min-width: 0;
-}
-
-.status-light {
-  flex: 0 0 11px;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: #7c8580;
-  box-shadow: 0 0 0 5px rgba(124, 133, 128, 0.13);
-}
-
-.status-light.live {
-  background: var(--flag-live);
-  box-shadow: 0 0 0 5px rgba(255, 211, 77, 0.17);
-}
-
-.status-light.capture {
-  background: var(--capture);
-  box-shadow: 0 0 0 5px rgba(89, 217, 137, 0.17);
-}
-
-.status-light.warn {
-  background: var(--danger);
-  box-shadow: 0 0 0 5px rgba(255, 107, 85, 0.16);
-}
-
-#statusText {
+.play-chip strong {
+  display: block;
+  margin-top: 3px;
   overflow: hidden;
-  color: #fff8e6;
-  font-size: clamp(16px, 2.7vw, 21px);
-  font-weight: 900;
-  line-height: 1.1;
+  color: #fff9e6;
+  font-size: clamp(19px, 4vw, 28px);
+  line-height: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-#subStatus {
-  margin: 5px 0 0 20px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.35;
+.mini-btn {
+  min-width: 88px;
+  pointer-events: auto;
+  background: rgba(15, 21, 17, 0.82);
 }
 
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.primary-btn,
-.ghost-btn,
-.pad-btn {
-  min-height: 44px;
+.capture-status {
+  position: absolute;
+  z-index: 12;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  width: min(520px, calc(100vw - 28px));
+  padding: 11px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
-  cursor: pointer;
+  background: rgba(15, 21, 17, 0.78);
+  color: #fff6dc;
+  font-size: 15px;
   font-weight: 900;
-  transition: transform 140ms ease, filter 140ms ease, background 140ms ease;
-}
-
-.primary-btn {
-  padding: 0 18px;
-  background: linear-gradient(180deg, #ffe27a 0%, #f2b737 100%);
-  color: #1d1709;
-  box-shadow: 0 12px 26px rgba(242, 183, 55, 0.22);
-}
-
-.ghost-btn {
-  padding: 0 15px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff6dd;
-}
-
-.primary-btn:hover,
-.ghost-btn:hover,
-.pad-btn:hover {
-  filter: brightness(1.06);
-  transform: translateY(-1px);
-}
-
-.primary-btn:active,
-.ghost-btn:active,
-.pad-btn:active {
-  transform: translateY(1px);
+  text-align: center;
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(14px);
+  transform: translateX(-50%);
 }
 
 .movement-pad {
   position: absolute;
   z-index: 13;
-  right: 12px;
-  top: 12px;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 58px);
   display: grid;
-  grid-template-columns: repeat(3, 42px);
-  grid-template-rows: repeat(3, 42px);
+  grid-template-columns: repeat(3, 44px);
+  grid-template-rows: repeat(3, 44px);
   gap: 5px;
 }
 
@@ -838,11 +841,12 @@ h1 {
 .pad-btn {
   display: grid;
   place-items: center;
-  min-height: 42px;
+  min-height: 44px;
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(17, 22, 24, 0.74);
+  background: rgba(15, 21, 17, 0.78);
   color: #fff5d5;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24);
 }
 
 .pad-btn.north {
@@ -874,10 +878,10 @@ h1 {
   padding: 10px 14px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
-  background: rgba(17, 22, 24, 0.92);
+  background: rgba(15, 21, 17, 0.92);
   color: #fff8e8;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 900;
   text-align: center;
   box-shadow: var(--shadow);
   opacity: 0;
@@ -891,259 +895,231 @@ h1 {
   transform: translate(-50%, 0);
 }
 
-.milestone {
-  position: fixed;
-  z-index: 25;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 18px;
-  background: rgba(4, 7, 7, 0.62);
-  backdrop-filter: blur(10px);
+@media (max-width: 840px) {
+  .lobby-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lobby-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .server-pill {
+    align-self: flex-start;
+  }
 }
 
-.milestone[hidden] {
-  display: none;
-}
-
-.milestone-panel {
-  width: min(420px, 100%);
-  padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 8px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 32%),
-    #171c18;
-  box-shadow: var(--shadow);
-  text-align: center;
-}
-
-.medal {
-  display: grid;
-  place-items: center;
-  width: 76px;
-  height: 76px;
-  margin: 0 auto 12px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 28%, #fff7b7, #f2bb39 62%, #8d5d1c 100%);
-  color: #211805;
-  font-size: 34px;
-  font-weight: 1000;
-  box-shadow: 0 0 0 8px rgba(242, 183, 55, 0.16);
-}
-
-.milestone h2 {
-  margin: 0;
-  color: #fff7dd;
-  font-size: clamp(26px, 7vw, 38px);
-  line-height: 0.96;
-}
-
-.milestone p {
-  margin: 10px auto 16px;
-  color: var(--muted);
-  font-size: 15px;
-  line-height: 1.45;
-}
-
-.milestone-actions {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.hidden {
-  display: none !important;
-}
-
-@media (max-width: 760px) {
-  .game-shell {
-    grid-template-rows: auto minmax(340px, 1fr) auto;
-    gap: 10px;
+@media (max-width: 620px) {
+  .lobby-screen {
+    gap: 12px;
     padding-left: 10px;
     padding-right: 10px;
   }
 
-  .top-hud {
+  .profile-panel,
+  .leaderboard-panel,
+  .system-panel {
+    padding: 14px;
+  }
+
+  .metric-board {
     grid-template-columns: 1fr;
   }
 
-  .hud-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    min-width: 0;
+  .metric,
+  .metric:nth-child(odd),
+  .metric:nth-last-child(-n + 2) {
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  .map-frame {
-    width: 100%;
-    max-height: calc(100dvh - 330px);
-    min-height: 330px;
+  .metric:last-child {
+    border-bottom: 0;
   }
 
-  .bottom-hud {
-    grid-template-columns: 1fr;
-  }
-
-  .actions {
-    justify-content: stretch;
+  .lobby-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
 
   .primary-btn,
-  .ghost-btn {
-    flex: 1 1 136px;
+  .ghost-btn,
+  .danger-btn {
+    min-width: 0;
+    width: 100%;
   }
 
-  #statusText {
-    white-space: normal;
+  .play-hud {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) 78px;
+  }
+
+  .play-chip {
+    min-height: 48px;
+    padding: 8px;
+  }
+
+  .play-chip strong {
+    font-size: 19px;
+  }
+
+  .mini-btn {
+    min-width: 0;
+    width: auto;
+    padding: 0 8px;
+  }
+
+  .capture-status {
+    bottom: max(12px, env(safe-area-inset-bottom));
   }
 
   .movement-pad {
-    grid-template-columns: repeat(3, 38px);
-    grid-template-rows: repeat(3, 38px);
-  }
-}
-
-@media (max-width: 420px) {
-  .brand-mark {
-    flex-basis: 38px;
-    width: 38px;
-    height: 38px;
-  }
-
-  h1 {
-    font-size: 26px;
-  }
-
-  .stat strong {
-    font-size: 18px;
-  }
-
-  .map-readout {
-    align-items: flex-end;
-  }
-
-  .scale {
-    font-size: 11px;
-  }
-
-  .scale::before {
-    width: 46px;
-  }
-
-  .compass {
-    width: 66px;
-    height: 66px;
+    grid-template-columns: repeat(3, 40px);
+    grid-template-rows: repeat(3, 40px);
+    bottom: calc(max(12px, env(safe-area-inset-bottom)) + 56px);
   }
 }
 </style>
 </head>
 <body>
-<main class="game-shell">
-  <header class="top-hud">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true"></div>
-      <div class="title-stack">
-        <p class="kicker">Live outdoor hunt</p>
-        <h1>Flag Hunt</h1>
+<main class="app">
+  <section class="lobby-screen" id="lobbyScreen">
+    <header class="lobby-top">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div>
+          <p class="kicker">Outdoor arena</p>
+          <h1>Flag Hunt</h1>
+        </div>
       </div>
-    </div>
-    <div class="hud-grid" aria-label="Game stats">
-      <div class="stat">
-        <span>Progress</span>
-        <strong id="progressStat">0/10</strong>
+      <div class="server-pill">
+        <span class="server-dot" id="serverDot"></span>
+        <span id="serverStatus">Local prototype</span>
       </div>
-      <div class="stat">
-        <span>Target</span>
-        <strong id="targetStat">--</strong>
-      </div>
-      <div class="stat">
-        <span>Distance</span>
-        <strong id="distanceStat">-- m</strong>
-      </div>
-      <div class="stat">
-        <span>Score</span>
-        <strong id="scoreStat">0</strong>
-      </div>
-    </div>
-  </header>
+    </header>
 
-  <section class="map-stage" aria-label="Playing map">
-    <div class="map-frame">
-      <div class="game-map" id="gameMap">
-        <div class="road one"></div>
-        <div class="road two"></div>
-        <div class="road three"></div>
-        <div class="map-zone grove"></div>
-        <div class="map-zone court"></div>
-        <div class="map-zone pond"></div>
-        <div class="map-zone plaza"></div>
-        <div class="map-label gate">Gate</div>
-        <div class="map-label lawn">Lawn</div>
-        <div class="map-label pond-label">Pond</div>
-        <div class="map-label court-label">Court</div>
-        <div class="hunt-ring"></div>
-        <div class="trail-layer" id="trailLayer"></div>
-        <div class="flags-layer" id="flagsLayer"></div>
-        <div class="player-marker" id="playerMarker" aria-label="Player location">
-          <div class="player-pulse"></div>
-          <div class="player-shadow"></div>
-          <div class="boy" aria-hidden="true">
-            <div class="hair"></div>
-            <div class="head"></div>
-            <div class="arm left"></div>
-            <div class="arm right"></div>
-            <div class="body"></div>
-            <div class="leg left"></div>
-            <div class="leg right"></div>
+    <section class="lobby-grid" aria-label="Game lobby">
+      <div class="panel profile-panel">
+        <div class="profile-head">
+          <div class="avatar">FH</div>
+          <div class="profile-title">
+            <h2 id="playerTitle">Hunter Lobby</h2>
+            <p id="lobbyMessage">Lock a home location, then spawn the current flag.</p>
           </div>
         </div>
-        <div class="map-readout">
-          <div class="scale">20 m</div>
-          <div class="compass" aria-label="Compass">
-            <span class="n">N</span>
-            <span class="e">E</span>
-            <span class="s">S</span>
-            <span class="w">W</span>
-            <span class="needle" id="needle"></span>
+
+        <div class="metric-board" aria-label="Player stats">
+          <div class="metric">
+            <span>Score</span>
+            <strong id="lobbyScore">0</strong>
+          </div>
+          <div class="metric">
+            <span>Rank</span>
+            <strong id="lobbyRank">--</strong>
+          </div>
+          <div class="metric">
+            <span>Flags</span>
+            <strong id="lobbyFlags">0/10</strong>
+          </div>
+          <div class="metric">
+            <span>Home</span>
+            <strong id="homeStatus">Not set</strong>
           </div>
         </div>
-        <div class="movement-pad" id="movementPad" hidden>
-          <button class="pad-btn north" type="button" data-move="north" aria-label="Move north">N</button>
-          <button class="pad-btn west" type="button" data-move="west" aria-label="Move west">W</button>
-          <button class="pad-btn east" type="button" data-move="east" aria-label="Move east">E</button>
-          <button class="pad-btn south" type="button" data-move="south" aria-label="Move south">S</button>
+
+        <div class="mission-strip" id="missionStrip">
+          <h3 id="missionTitle">Waiting for player</h3>
+          <p id="missionCopy">The home point is the first location where the run starts. Every flag in this run spawns within 50 m of that home point.</p>
         </div>
+      </div>
+
+      <div class="side-stack">
+        <div class="panel leaderboard-panel">
+          <div class="panel-title">
+            <h2>Live Ranking</h2>
+            <span id="rankingCount">6 players</span>
+          </div>
+          <div class="leaderboard" id="leaderboard"></div>
+        </div>
+
+        <div class="panel system-panel">
+          <div class="panel-title">
+            <h2>Run Details</h2>
+            <span id="runMode">Idle</span>
+          </div>
+          <div class="system-list">
+            <div class="system-line">
+              <span>Current flag</span>
+              <strong id="currentFlagText">None</strong>
+            </div>
+            <div class="system-line">
+              <span>Spawn radius</span>
+              <strong>50 m from home</strong>
+            </div>
+            <div class="system-line">
+              <span>Capture radius</span>
+              <strong>7 m</strong>
+            </div>
+            <div class="system-line">
+              <span>GPS accuracy</span>
+              <strong id="accuracyText">--</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="lobby-actions">
+      <button class="primary-btn" id="spawnBtn" type="button" disabled>Spawn Flag</button>
+      <button class="ghost-btn" id="startBtn" type="button">Start GPS</button>
+      <button class="ghost-btn" id="practiceBtn" type="button">Practice</button>
+      <button class="danger-btn" id="resetBtn" type="button">New Run</button>
+    </footer>
+  </section>
+
+  <section class="play-screen hidden" id="playScreen" aria-label="Gameplay map">
+    <div class="play-map" id="playMap">
+      <div class="home-glow" aria-hidden="true"></div>
+      <div class="flag-layer" id="flagLayer"></div>
+      <div class="player-marker" id="playerMarker" aria-label="Player location">
+        <div class="direction-arrow" id="directionArrow" aria-hidden="true"></div>
+        <div class="player-pulse"></div>
+        <div class="player-shadow"></div>
+        <div class="boy" aria-hidden="true">
+          <div class="hair"></div>
+          <div class="head"></div>
+          <div class="arm left"></div>
+          <div class="arm right"></div>
+          <div class="body"></div>
+          <div class="leg left"></div>
+          <div class="leg right"></div>
+        </div>
+      </div>
+      <div class="play-hud">
+        <div class="play-chip">
+          <span>Flag</span>
+          <strong id="playFlag">--</strong>
+        </div>
+        <div class="play-chip">
+          <span>Distance</span>
+          <strong id="playDistance">-- m</strong>
+        </div>
+        <div class="play-chip">
+          <span>Score</span>
+          <strong id="playScore">0</strong>
+        </div>
+        <button class="mini-btn" id="lobbyBtn" type="button">Lobby</button>
+      </div>
+      <div class="capture-status" id="captureStatus">Move toward the arrow.</div>
+      <div class="movement-pad" id="movementPad" hidden>
+        <button class="pad-btn north" type="button" data-move="north" aria-label="Move north">N</button>
+        <button class="pad-btn west" type="button" data-move="west" aria-label="Move west">W</button>
+        <button class="pad-btn east" type="button" data-move="east" aria-label="Move east">E</button>
+        <button class="pad-btn south" type="button" data-move="south" aria-label="Move south">S</button>
       </div>
     </div>
   </section>
-
-  <footer class="bottom-hud">
-    <div class="mission">
-      <div class="status-row">
-        <span class="status-light" id="statusLight"></span>
-        <strong id="statusText">Ready to start</strong>
-      </div>
-      <p id="subStatus">Ten flags will appear inside a 50 m hunt zone.</p>
-    </div>
-    <div class="actions">
-      <button class="primary-btn" id="startBtn" type="button">Start Hunt</button>
-      <button class="ghost-btn" id="practiceBtn" type="button">Practice</button>
-      <button class="ghost-btn hidden" id="resetBtn" type="button">New Run</button>
-    </div>
-  </footer>
 </main>
-
-<section class="milestone" id="milestone" hidden aria-modal="true" role="dialog">
-  <div class="milestone-panel">
-    <div class="medal" id="medalNumber">1</div>
-    <h2 id="milestoneTitle">Milestone</h2>
-    <p id="milestoneCopy">Flag captured.</p>
-    <div class="milestone-actions">
-      <button class="primary-btn" id="nextFlagBtn" type="button">Spawn Next Flag</button>
-      <button class="ghost-btn hidden" id="finishBtn" type="button">Start New Run</button>
-    </div>
-  </div>
-</section>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1151,7 +1127,7 @@ h1 {
 (() => {
   "use strict";
 
-  const FLAG_COUNT = 10;
+  const FLAG_LIMIT = 10;
   const SPAWN_RADIUS_METERS = 50;
   const MAP_HALF_METERS = 60;
   const CAPTURE_RADIUS_METERS = 7;
@@ -1159,42 +1135,60 @@ h1 {
   const METERS_PER_DEGREE_LAT = 111111;
 
   const els = {
-    progressStat: document.getElementById("progressStat"),
-    targetStat: document.getElementById("targetStat"),
-    distanceStat: document.getElementById("distanceStat"),
-    scoreStat: document.getElementById("scoreStat"),
-    flagsLayer: document.getElementById("flagsLayer"),
-    trailLayer: document.getElementById("trailLayer"),
-    playerMarker: document.getElementById("playerMarker"),
-    statusLight: document.getElementById("statusLight"),
-    statusText: document.getElementById("statusText"),
-    subStatus: document.getElementById("subStatus"),
+    lobbyScreen: document.getElementById("lobbyScreen"),
+    playScreen: document.getElementById("playScreen"),
+    serverDot: document.getElementById("serverDot"),
+    serverStatus: document.getElementById("serverStatus"),
+    playerTitle: document.getElementById("playerTitle"),
+    lobbyMessage: document.getElementById("lobbyMessage"),
+    lobbyScore: document.getElementById("lobbyScore"),
+    lobbyRank: document.getElementById("lobbyRank"),
+    lobbyFlags: document.getElementById("lobbyFlags"),
+    homeStatus: document.getElementById("homeStatus"),
+    missionTitle: document.getElementById("missionTitle"),
+    missionCopy: document.getElementById("missionCopy"),
+    leaderboard: document.getElementById("leaderboard"),
+    rankingCount: document.getElementById("rankingCount"),
+    runMode: document.getElementById("runMode"),
+    currentFlagText: document.getElementById("currentFlagText"),
+    accuracyText: document.getElementById("accuracyText"),
+    spawnBtn: document.getElementById("spawnBtn"),
     startBtn: document.getElementById("startBtn"),
     practiceBtn: document.getElementById("practiceBtn"),
     resetBtn: document.getElementById("resetBtn"),
+    playFlag: document.getElementById("playFlag"),
+    playDistance: document.getElementById("playDistance"),
+    playScore: document.getElementById("playScore"),
+    lobbyBtn: document.getElementById("lobbyBtn"),
+    captureStatus: document.getElementById("captureStatus"),
+    flagLayer: document.getElementById("flagLayer"),
+    playerMarker: document.getElementById("playerMarker"),
+    directionArrow: document.getElementById("directionArrow"),
     movementPad: document.getElementById("movementPad"),
-    milestone: document.getElementById("milestone"),
-    medalNumber: document.getElementById("medalNumber"),
-    milestoneTitle: document.getElementById("milestoneTitle"),
-    milestoneCopy: document.getElementById("milestoneCopy"),
-    nextFlagBtn: document.getElementById("nextFlagBtn"),
-    finishBtn: document.getElementById("finishBtn"),
-    toast: document.getElementById("toast"),
-    needle: document.getElementById("needle")
+    toast: document.getElementById("toast")
   };
 
   const state = {
     mode: "idle",
+    screen: "lobby",
     watchId: null,
-    center: null,
+    home: null,
     player: null,
-    flags: [],
-    activeIndex: 0,
+    currentFlag: null,
+    lastFlag: null,
+    nextFlagNumber: 1,
+    captured: 0,
     score: 0,
-    heading: 0,
-    pendingMilestone: false,
-    trail: [],
-    accuracy: null
+    bestStreak: 0,
+    accuracy: null,
+    lastCapture: null,
+    competitors: [
+      { name: "Maya", score: 4120 },
+      { name: "Rin", score: 3580 },
+      { name: "Dev", score: 2840 },
+      { name: "Aju", score: 1720 },
+      { name: "Noah", score: 930 }
+    ]
   };
 
   function toRad(value) {
@@ -1251,77 +1245,83 @@ h1 {
     };
   }
 
-  function randomFlagOffsets() {
-    const offsets = [];
-    let attempts = 0;
-
-    while (offsets.length < FLAG_COUNT && attempts < 500) {
-      attempts += 1;
+  function randomFlagOffset() {
+    for (let attempt = 0; attempt < 120; attempt += 1) {
       const angle = Math.random() * Math.PI * 2;
-      const radius = 12 + Math.sqrt(Math.random()) * (SPAWN_RADIUS_METERS - 12);
+      const radius = 14 + Math.sqrt(Math.random()) * (SPAWN_RADIUS_METERS - 14);
       const candidate = {
         north: Math.cos(angle) * radius,
         east: Math.sin(angle) * radius
       };
-      const farEnough = offsets.every(existing => {
-        const dn = existing.north - candidate.north;
-        const de = existing.east - candidate.east;
-        return Math.hypot(dn, de) >= 8;
-      });
 
-      if (farEnough) {
-        offsets.push(candidate);
+      if (!state.lastFlag) {
+        return candidate;
+      }
+
+      const lastOffset = pointToOffset(state.home, state.lastFlag);
+      const separation = Math.hypot(candidate.north - lastOffset.north, candidate.east - lastOffset.east);
+      if (separation >= 10) {
+        return candidate;
       }
     }
 
-    while (offsets.length < FLAG_COUNT) {
-      const angle = offsets.length * (Math.PI * 2 / FLAG_COUNT);
-      offsets.push({
-        north: Math.cos(angle) * (SPAWN_RADIUS_METERS - 6),
-        east: Math.sin(angle) * (SPAWN_RADIUS_METERS - 6)
-      });
+    const fallbackAngle = state.nextFlagNumber * 2.399963;
+    return {
+      north: Math.cos(fallbackAngle) * 42,
+      east: Math.sin(fallbackAngle) * 42
+    };
+  }
+
+  function lockHome(origin, mode) {
+    state.mode = mode;
+    state.screen = "lobby";
+    state.home = { ...origin };
+    state.player = { ...origin };
+    state.currentFlag = null;
+    state.lastFlag = null;
+    state.nextFlagNumber = 1;
+    state.captured = 0;
+    state.score = 0;
+    state.bestStreak = 0;
+    state.lastCapture = null;
+    state.accuracy = null;
+    document.body.classList.toggle("practice-mode", mode === "practice");
+    showLobby();
+    render();
+  }
+
+  function spawnFlag() {
+    if (!state.home) {
+      showToast("Set home location first.");
+      return;
     }
 
-    return offsets;
-  }
+    if (state.captured >= FLAG_LIMIT) {
+      showToast("Run complete. Start a new run.");
+      return;
+    }
 
-  function spawnFlags(center) {
-    state.flags = randomFlagOffsets().map((offset, index) => ({
-      id: index + 1,
-      ...offsetToPoint(center, offset.north, offset.east),
-      captured: false
-    }));
-    state.activeIndex = 0;
-    state.pendingMilestone = false;
-  }
+    if (!state.currentFlag) {
+      const offset = randomFlagOffset();
+      state.currentFlag = {
+        id: state.nextFlagNumber,
+        ...offsetToPoint(state.home, offset.north, offset.east)
+      };
+      state.lastFlag = state.currentFlag;
+    }
 
-  function beginRun(origin, mode) {
-    state.mode = mode;
-    document.body.classList.toggle("practice-mode", mode === "practice");
-    state.center = { ...origin };
-    state.player = { ...origin };
-    state.score = 0;
-    state.trail = [];
-    state.accuracy = null;
-    spawnFlags(state.center);
-    els.resetBtn.classList.remove("hidden");
-    els.movementPad.hidden = mode !== "practice";
-    setStatus("Flag 1 is live", "Find the highlighted flag inside the 50 m zone.", "live");
+    showPlay();
     render();
   }
 
   async function startGps() {
     if (!("geolocation" in navigator)) {
-      setStatus("GPS is unavailable", "Practice mode is ready on this device.", "warn");
       showToast("GPS is unavailable here.");
       return;
     }
 
     els.startBtn.disabled = true;
     els.startBtn.textContent = "Locating...";
-    setStatus("Locking location", "Waiting for a high accuracy position.", "live");
-
-    await requestCompassPermission();
 
     if (state.watchId !== null) {
       navigator.geolocation.clearWatch(state.watchId);
@@ -1335,11 +1335,11 @@ h1 {
         };
         state.accuracy = position.coords.accuracy;
 
-        if (!state.center || state.mode !== "gps") {
-          beginRun(coords, "gps");
+        if (!state.home || state.mode !== "gps") {
+          lockHome(coords, "gps");
+          showToast("Home location locked.");
         } else {
           state.player = coords;
-          pushTrail(coords);
           render();
           checkCapture();
         }
@@ -1349,12 +1349,12 @@ h1 {
       },
       error => {
         els.startBtn.disabled = false;
-        els.startBtn.textContent = "Start Hunt";
+        els.startBtn.textContent = "Start GPS";
         const message = error.code === error.PERMISSION_DENIED
           ? "Location permission blocked"
           : "Location signal lost";
-        setStatus(message, "Practice mode is ready while GPS is unavailable.", "warn");
         showToast(message);
+        render();
       },
       {
         enableHighAccuracy: true,
@@ -1364,32 +1364,25 @@ h1 {
     );
   }
 
-  async function requestCompassPermission() {
-    if (
-      typeof DeviceOrientationEvent !== "undefined" &&
-      typeof DeviceOrientationEvent.requestPermission === "function"
-    ) {
-      try {
-        await DeviceOrientationEvent.requestPermission();
-      } catch (error) {
-        return;
-      }
-    }
-  }
-
   function startPractice() {
     if (state.watchId !== null && "geolocation" in navigator) {
       navigator.geolocation.clearWatch(state.watchId);
       state.watchId = null;
     }
 
-    beginRun({ lat: 10.000000, lon: 76.000000 }, "practice");
-    els.startBtn.textContent = "Start Hunt";
+    lockHome({ lat: 10.000000, lon: 76.000000 }, "practice");
     els.startBtn.disabled = false;
+    els.startBtn.textContent = "Start GPS";
+  }
+
+  function resetRun() {
+    const origin = state.player || state.home || { lat: 10.000000, lon: 76.000000 };
+    const mode = state.mode === "gps" ? "gps" : "practice";
+    lockHome(origin, mode);
   }
 
   function movePractice(direction) {
-    if (state.mode !== "practice" || !state.player || state.pendingMilestone) {
+    if (state.mode !== "practice" || state.screen !== "play" || !state.player) {
       return;
     }
 
@@ -1406,180 +1399,172 @@ h1 {
     }
 
     state.player = offsetToPoint(state.player, move[0], move[1]);
-    pushTrail(state.player);
     render();
     checkCapture();
   }
 
-  function pushTrail(point) {
-    if (!state.center) {
-      return;
-    }
-
-    state.trail.push({ ...point });
-    if (state.trail.length > 36) {
-      state.trail.shift();
-    }
-  }
-
-  function currentFlag() {
-    return state.flags[state.activeIndex] || null;
-  }
-
   function checkCapture() {
-    if (!state.player || !currentFlag() || state.pendingMilestone) {
+    if (!state.player || !state.currentFlag || state.screen !== "play") {
       return;
     }
 
-    const flag = currentFlag();
-    const dist = distanceMeters(state.player, flag);
-
+    const dist = distanceMeters(state.player, state.currentFlag);
     if (dist <= CAPTURE_RADIUS_METERS) {
-      captureFlag(flag, dist);
+      captureFlag(dist);
     }
   }
 
-  function captureFlag(flag, dist) {
-    flag.captured = true;
-    state.pendingMilestone = true;
-    const capturedCount = state.flags.filter(item => item.captured).length;
-    const bonus = Math.max(50, 300 - Math.round(dist * 25));
-    state.score += 500 + bonus;
+  function captureFlag(distance) {
+    const capturedFlag = state.currentFlag;
+    const bonus = Math.max(50, 300 - Math.round(distance * 25));
+    const points = 500 + bonus;
 
-    render();
-    setStatus(`Flag ${flag.id} captured`, `${capturedCount}/${FLAG_COUNT} milestones reached.`, "capture");
-    showMilestone(flag, capturedCount);
-  }
-
-  function showMilestone(flag, capturedCount) {
-    const complete = capturedCount >= FLAG_COUNT;
-    els.medalNumber.textContent = String(capturedCount);
-    els.milestoneTitle.textContent = complete ? "Run Complete" : "Milestone Reached";
-    els.milestoneCopy.textContent = complete
-      ? `All ${FLAG_COUNT} flags captured. Final score: ${state.score}.`
-      : `Flag ${flag.id} captured. Score: ${state.score}.`;
-    els.nextFlagBtn.classList.toggle("hidden", complete);
-    els.finishBtn.classList.toggle("hidden", !complete);
-    els.milestone.hidden = false;
-  }
-
-  function spawnNextFlag() {
-    const nextIndex = state.flags.findIndex(flag => !flag.captured);
-    state.pendingMilestone = false;
-    els.milestone.hidden = true;
-
-    if (nextIndex === -1) {
-      setStatus("Run complete", `Final score: ${state.score}.`, "capture");
-      render();
-      return;
-    }
-
-    state.activeIndex = nextIndex;
-    setStatus(`Flag ${state.flags[nextIndex].id} is live`, "Next milestone active.", "live");
+    state.captured += 1;
+    state.nextFlagNumber += 1;
+    state.score += points;
+    state.bestStreak = Math.max(state.bestStreak, state.captured);
+    state.lastCapture = {
+      flagId: capturedFlag.id,
+      points,
+      distance: Math.max(0, Math.round(distance))
+    };
+    state.currentFlag = null;
+    advanceCompetitors();
+    showLobby();
     render();
   }
 
-  function resetRun() {
-    if (!state.player) {
-      startPractice();
-      return;
-    }
+  function advanceCompetitors() {
+    state.competitors = state.competitors.map((player, index) => ({
+      ...player,
+      score: player.score + Math.round(90 + Math.random() * (index === 0 ? 90 : 170))
+    }));
+  }
 
-    const origin = { ...state.player };
-    const mode = state.mode === "gps" ? "gps" : "practice";
-    beginRun(origin, mode);
-    els.milestone.hidden = true;
+  function leaderboardRows() {
+    return [
+      ...state.competitors,
+      { name: "You", score: state.score, you: true }
+    ].sort((a, b) => b.score - a.score);
+  }
+
+  function playerRank() {
+    return leaderboardRows().findIndex(row => row.you) + 1;
+  }
+
+  function showLobby() {
+    state.screen = "lobby";
+    els.lobbyScreen.classList.remove("hidden");
+    els.playScreen.classList.add("hidden");
+    els.movementPad.hidden = true;
+  }
+
+  function showPlay() {
+    state.screen = "play";
+    els.lobbyScreen.classList.add("hidden");
+    els.playScreen.classList.remove("hidden");
+    els.movementPad.hidden = state.mode !== "practice";
   }
 
   function render() {
-    renderStats();
-    renderFlags();
-    renderTrail();
-    renderPlayer();
+    renderLobby();
+    renderPlay();
   }
 
-  function renderStats() {
-    const capturedCount = state.flags.filter(flag => flag.captured).length;
-    const flag = currentFlag();
-    const distance = state.player && flag && !flag.captured
-      ? distanceMeters(state.player, flag)
-      : null;
+  function renderLobby() {
+    const rank = state.home ? `#${playerRank()}` : "--";
+    const complete = state.captured >= FLAG_LIMIT;
+    const hasHome = Boolean(state.home);
+    const hasFlag = Boolean(state.currentFlag);
 
-    els.progressStat.textContent = `${capturedCount}/${FLAG_COUNT}`;
-    els.targetStat.textContent = flag && !flag.captured ? `Flag ${flag.id}` : "--";
-    els.distanceStat.textContent = distance === null ? "-- m" : `${Math.round(distance)} m`;
-    els.scoreStat.textContent = String(state.score);
+    els.serverDot.classList.toggle("online", hasHome);
+    els.serverStatus.textContent = hasHome ? "Ready for server sync" : "Local prototype";
+    els.playerTitle.textContent = hasHome ? "Hunter Ready" : "Hunter Lobby";
+    els.lobbyScore.textContent = String(state.score);
+    els.lobbyRank.textContent = rank;
+    els.lobbyFlags.textContent = `${state.captured}/${FLAG_LIMIT}`;
+    els.homeStatus.textContent = hasHome ? "Locked" : "Not set";
+    els.runMode.textContent = state.mode === "gps" ? "GPS" : state.mode === "practice" ? "Practice" : "Idle";
+    els.currentFlagText.textContent = hasFlag ? `Flag ${state.currentFlag.id}` : "None";
+    els.accuracyText.textContent = state.accuracy ? `+/- ${Math.round(state.accuracy)} m` : "--";
+    els.rankingCount.textContent = `${state.competitors.length + 1} players`;
+    els.spawnBtn.disabled = !hasHome || complete;
+    els.spawnBtn.textContent = complete
+      ? "Run Complete"
+      : state.captured === 0 && !hasFlag
+        ? "Spawn Flag"
+        : "Spawn Next Flag";
 
-    if (state.player && flag && !state.pendingMilestone) {
-      const accuracy = state.accuracy ? `GPS +/- ${Math.round(state.accuracy)} m.` : "";
-      if (distance <= CAPTURE_RADIUS_METERS + 4) {
-        setStatus(`Flag ${flag.id} is close`, `${Math.max(0, Math.round(distance))} m from capture. ${accuracy}`.trim(), "live");
-      } else if (state.mode !== "idle") {
-        setStatus(`Flag ${flag.id} is live`, `${Math.round(distance)} m away. ${accuracy}`.trim(), "live");
-      }
+    if (!hasHome) {
+      els.lobbyMessage.textContent = "Lock a home location, then spawn the current flag.";
+      els.missionTitle.textContent = "Waiting for player";
+      els.missionCopy.textContent = "The home point is the first location where the run starts. Every flag in this run spawns within 50 m of that home point.";
+    } else if (complete) {
+      els.lobbyMessage.textContent = "Run complete. Start a fresh run to choose a new home.";
+      els.missionTitle.textContent = "All flags captured";
+      els.missionCopy.textContent = `Final score: ${state.score}. Rank: ${rank}.`;
+    } else if (state.lastCapture) {
+      els.lobbyMessage.textContent = `Flag ${state.lastCapture.flagId} captured.`;
+      els.missionTitle.textContent = `Milestone ${state.captured}/${FLAG_LIMIT}`;
+      els.missionCopy.textContent = `+${state.lastCapture.points} points. Spawn the next flag from this lobby when ready.`;
+    } else {
+      els.lobbyMessage.textContent = "Home locked. Spawn the current flag to enter the map.";
+      els.missionTitle.textContent = "Home location active";
+      els.missionCopy.textContent = "Every new flag uses this home location, not the player's later position.";
     }
+
+    els.leaderboard.innerHTML = leaderboardRows().map((row, index) => `
+      <div class="leader-row ${row.you ? "you" : ""}">
+        <span class="rank-num">${index + 1}</span>
+        <span class="leader-name">${row.name}</span>
+        <span class="leader-score">${row.score}</span>
+      </div>
+    `).join("");
   }
 
-  function renderFlags() {
-    if (!state.center) {
-      els.flagsLayer.innerHTML = "";
+  function renderPlay() {
+    if (!state.home || !state.player) {
+      els.flagLayer.innerHTML = "";
       return;
     }
 
-    els.flagsLayer.innerHTML = state.flags.map((flag, index) => {
-      const offset = pointToOffset(state.center, flag);
-      const point = offsetToPercent(offset);
-      const status = flag.captured
-        ? "captured"
-        : index === state.activeIndex
-          ? "active"
-          : "locked";
-      return `
-        <div class="flag-marker ${status}" style="left:${point.x}%;top:${point.y}%;" aria-label="Flag ${flag.id}">
-          <span class="base"></span>
-          <span class="pole"></span>
-          <span class="cloth"></span>
-          <span class="number">${flag.id}</span>
-        </div>
-      `;
-    }).join("");
-  }
-
-  function renderTrail() {
-    if (!state.center || state.trail.length === 0) {
-      els.trailLayer.innerHTML = "";
-      return;
-    }
-
-    els.trailLayer.innerHTML = state.trail.map((point, index) => {
-      const offset = pointToOffset(state.center, point);
-      const pos = offsetToPercent(offset);
-      const opacity = (index + 1) / state.trail.length;
-      return `<span class="trail-dot" style="left:${pos.x}%;top:${pos.y}%;opacity:${opacity};"></span>`;
-    }).join("");
-  }
-
-  function renderPlayer() {
-    if (!state.center || !state.player) {
-      return;
-    }
-
-    const offset = pointToOffset(state.center, state.player);
-    const pos = offsetToPercent(offset);
-    const outside = Math.hypot(offset.north, offset.east) > SPAWN_RADIUS_METERS + 8;
-    els.playerMarker.style.left = `${pos.x}%`;
-    els.playerMarker.style.top = `${pos.y}%`;
+    const playerOffset = pointToOffset(state.home, state.player);
+    const playerPoint = offsetToPercent(playerOffset);
+    const outside = Math.hypot(playerOffset.north, playerOffset.east) > SPAWN_RADIUS_METERS + 10;
+    els.playerMarker.style.left = `${playerPoint.x}%`;
+    els.playerMarker.style.top = `${playerPoint.y}%`;
     els.playerMarker.classList.toggle("outside", outside);
+    els.playScore.textContent = String(state.score);
 
-    if (outside && !state.pendingMilestone) {
-      setStatus("Outside hunt zone", "Return to the 50 m play area.", "warn");
+    if (!state.currentFlag) {
+      els.flagLayer.innerHTML = "";
+      els.playFlag.textContent = "--";
+      els.playDistance.textContent = "-- m";
+      els.captureStatus.textContent = "Return to lobby to spawn a flag.";
+      return;
     }
-  }
 
-  function setStatus(title, detail, kind) {
-    els.statusText.textContent = title;
-    els.subStatus.textContent = detail || "";
-    els.statusLight.className = `status-light ${kind || ""}`.trim();
+    const flagOffset = pointToOffset(state.home, state.currentFlag);
+    const flagPoint = offsetToPercent(flagOffset);
+    const distance = distanceMeters(state.player, state.currentFlag);
+    const bearing = bearingDegrees(state.player, state.currentFlag);
+
+    els.flagLayer.innerHTML = `
+      <div class="flag-marker" style="left:${flagPoint.x}%;top:${flagPoint.y}%;" aria-label="Current flag">
+        <span class="base"></span>
+        <span class="pole"></span>
+        <span class="cloth"></span>
+        <span class="number">${state.currentFlag.id}</span>
+      </div>
+    `;
+    els.directionArrow.style.setProperty("--arrow-rotation", `${bearing}deg`);
+    els.playFlag.textContent = String(state.currentFlag.id);
+    els.playDistance.textContent = `${Math.round(distance)} m`;
+    els.captureStatus.textContent = distance <= CAPTURE_RADIUS_METERS + 4
+      ? "Capture range reached."
+      : outside
+        ? "Outside home zone."
+        : "Move toward the arrow.";
   }
 
   function showToast(message) {
@@ -1590,15 +1575,6 @@ h1 {
       els.toast.classList.remove("show");
     }, 2200);
   }
-
-  window.addEventListener("deviceorientation", event => {
-    if (event.alpha == null) {
-      return;
-    }
-
-    state.heading = 360 - event.alpha;
-    els.needle.style.setProperty("--heading", `${state.heading}deg`);
-  }, true);
 
   window.addEventListener("keydown", event => {
     const keys = {
@@ -1624,9 +1600,12 @@ h1 {
 
   els.startBtn.addEventListener("click", startGps);
   els.practiceBtn.addEventListener("click", startPractice);
+  els.spawnBtn.addEventListener("click", spawnFlag);
   els.resetBtn.addEventListener("click", resetRun);
-  els.nextFlagBtn.addEventListener("click", spawnNextFlag);
-  els.finishBtn.addEventListener("click", resetRun);
+  els.lobbyBtn.addEventListener("click", () => {
+    showLobby();
+    render();
+  });
   els.movementPad.addEventListener("click", event => {
     const button = event.target.closest("[data-move]");
     if (button) {
