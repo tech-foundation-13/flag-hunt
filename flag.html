@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flag Hunt Prototype</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    text-align:center;
+    background:#111;
+    color:white;
+    padding:20px;
+}
+
+h1{
+    color:#00ff88;
+}
+
+.card{
+    max-width:400px;
+    margin:auto;
+    padding:20px;
+    border-radius:12px;
+    background:#222;
+}
+
+#status{
+    font-size:24px;
+    margin:20px 0;
+}
+
+#distance{
+    font-size:40px;
+    color:#00ff88;
+}
+
+.small{
+    color:#aaa;
+    margin-top:10px;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h1>🏁 Flag Hunt</h1>
+
+    <div id="status">Waiting for GPS...</div>
+
+    <div>Distance to Flag</div>
+    <div id="distance">--</div>
+
+    <div class="small" id="coords"></div>
+</div>
+
+<script>
+
+// CHANGE THESE TO YOUR FLAG LOCATION
+const flagLat = 8.5241;
+const flagLon = 76.9366;
+
+// Capture radius in meters
+const captureRadius = 5;
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+
+    const R = 6371000;
+
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+
+    const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1 * Math.PI / 180) *
+        Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) ** 2;
+
+    const c = 2 * Math.atan2(
+        Math.sqrt(a),
+        Math.sqrt(1 - a)
+    );
+
+    return R * c;
+}
+
+if (!navigator.geolocation) {
+
+    document.getElementById("status").textContent =
+        "GPS not supported";
+
+} else {
+
+    navigator.geolocation.watchPosition(
+
+        position => {
+
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+
+            document.getElementById("coords").innerHTML =
+                `Lat: ${lat.toFixed(6)}<br>Lon: ${lon.toFixed(6)}`;
+
+            const distance = calculateDistance(
+                lat,
+                lon,
+                flagLat,
+                flagLon
+            );
+
+            document.getElementById("distance").textContent =
+                Math.round(distance) + " m";
+
+            if (distance <= captureRadius) {
+
+                document.getElementById("status").innerHTML =
+                    "🏆 FLAG CAPTURED!";
+
+            } else {
+
+                document.getElementById("status").innerHTML =
+                    "🚶 Move closer to find the flag";
+            }
+        },
+
+        error => {
+
+            document.getElementById("status").textContent =
+                "Location access denied";
+        },
+
+        {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 10000
+        }
+    );
+}
+</script>
+
+</body>
+</html>
